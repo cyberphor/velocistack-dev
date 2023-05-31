@@ -1,16 +1,31 @@
 services:
-  # nginx
-  intelowl:
-    image: intelowlproject/intelowl_nginx
-    container_name: intelowl
-    ports:
-      - "8443:443"
+  nginx:
+    build: nginx
+    image: nginx:latest
+    container_name: nginx
+    env_file:
+      - .env
     volumes:
       - certs:/etc/nginx/ssl:ro
+    ports:
+     - "8443:443"
+  #velociraptor
+  #elasticsearch
+  #kibana
+  #grafana
+  #prometheus
+  #zinc
+  #intelowl:
+  #  build: intelowl
+  #  image: intelowl:latest
+  #  container_name: intelowl
+  #  env_file:
+  #    - .env
+  #  volumes:
+  #    - certs:/etc/nginx/ssl:ro
+  #  ports:
+  #    - "8443:443"
   # iris
-  # velociraptor
-  # elasticsearch
-  # kibana
-  # grafana
-  # prometheus
-  # zinc
+volumes:
+  certs:
+    name: certs
