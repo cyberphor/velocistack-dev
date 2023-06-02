@@ -7,4 +7,6 @@ WORKDIR /etc/nginx/
 COPY . .
 
 # Create and restrict certificates
-RUN openssl req -x509 -nodes -days 365 -subj /CN="velocistack" -keyout "/etc/nginx/nginx.key" -out "/etc/nginx/nginx.crt"
+RUN mkdir ssl/ &&\
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj /CN="velocistack" -keyout "ssl/nginx.key" -out "ssl/nginx.crt" &&\
+    chmod -R 600 /etc/nginx/ssl/
