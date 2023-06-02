@@ -1,16 +1,16 @@
 # Stage 1: Frontend
 # Remove this part if it is conflicting with the frontend you are currently testing
 FROM node:lts-alpine3.14 as frontend-build
-
 WORKDIR /
 # copy react source code
 COPY frontend/ .
+
 # copy version file as an env file
 COPY docker/.version .env.local
+
 # install and build
 RUN npm install npm@latest -g
 RUN npm install
-
 RUN PUBLIC_URL=/static/reactapp/ npm run build
 
 # Stage 2: Backend
@@ -28,7 +28,8 @@ ENV watch_logs_cmd "watch -n1 tail -n10 /var/log/intel_owl/django/api_app.log"
 ARG REPO_DOWNLOADER_ENABLED=true
 ARG WATCHMAN=false
 
-RUN mkdir -p ${LOG_PATH} \
+RUN mkdir -p \
+    ${LOG_PATH} \ 
     ${LOG_PATH}/django \
     ${LOG_PATH}/uwsgi \
     /opt/deploy/files_required /opt/deploy/yara /opt/deploy/configuration
@@ -48,6 +49,7 @@ COPY requirements/project-requirements.txt $PYTHONPATH/project-requirements.txt
 WORKDIR $PYTHONPATH
 
 RUN pip3 install --no-cache-dir --compile -r project-requirements.txt
+
 # install elasticsearch-dsl's appropriate version as specified by user
 RUN pip3 install --no-cache-dir django-elasticsearch-dsl==${ELASTICSEARCH_DSL_VERSION}
 
