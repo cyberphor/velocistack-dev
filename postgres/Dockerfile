@@ -16,6 +16,6 @@
 #  along with this program; if not, write to the Free Software Foundation,
 #  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-FROM postgres:12-alpine
+FROM postgres:latest
 
-COPY create_user.sh   /docker-entrypoint-initdb.d/10-create_user.sh
+COPY create_user.sh  /docker-entrypoint-initdb.d/10-create_user.sh
