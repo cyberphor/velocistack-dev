@@ -1,5 +1,5 @@
 # Docker metadata
-FROM python:3.9
+FROM python:3.9.16
 
 # Download Intel Owl 
 WORKDIR /opt/intel_owl/
@@ -13,24 +13,28 @@ RUN git clone https://github.com/intelowlproject/IntelOwl . &&\
 
 # Install uWSGI, Django, and other Python dependencies
 COPY . .
-RUN find /opt/intel_owl/requirements/ -name "*-requirements.txt" -type f -exec pip install -r '{}' ';'
-RUN pip install boto3 psycopg2 prettyjson django_celery_results django_elasticsearch_dsl rest_email_auth
+RUN pip install -r /opt/intel_owl/requirements/certego-requirements.txt
+RUN pip install -r /opt/intel_owl/requirements/django-server-requirements.txt
+RUN pip install -r /opt/intel_owl/requirements/docs-requirements.txt
+RUN pip install -r /opt/intel_owl/requirements/pre-requirements.txt
+RUN pip install -r /opt/intel_owl/requirements/test-requirements.txt
 
 # Do stuff with Django
-RUN python manage.py makemigrations rest_email_auth
-RUN python manage.py migrate
-RUN python manage.py createcachetable
-RUN python manage.py collectstatic --noinput
+#RUN python manage.py makemigrations durin
+#RUN python manage.py makemigrations rest_email_auth
+#RUN python manage.py migrate
+#RUN python manage.py createcachetable
+#RUN python manage.py collectstatic --noinput
 
 # - postgres
 # - uwsgi
 #   - Run uswgi
 #     - https://greut.medium.com/minimal-python-deployment-on-docker-with-uwsgi-bc5aa89b3d35
 #     - https://uwsgi-docs.readthedocs.io/en/latest/Configuration.html
-# - nginx
+# - rabbitmq
 # - celery_beat
 # - celery_worker
-# - rabbitmq
+# - nginx
 
 # start the app (http://localhost)
 CMD [ "uwsgi", "--ini", "/etc/uwsgi/sites/intel_owl.ini" ]

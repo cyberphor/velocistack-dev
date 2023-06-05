@@ -21,7 +21,6 @@ ENV LOG_PATH /var/log/intel_owl
 ENV ELASTICSEARCH_DSL_VERSION 7.2.2
 ENV watch_logs_cmd "watch -n1 tail -n10 /var/log/intel_owl/django/api_app.log"
 ENV PERL_MM_USE_DEFAULT 1
-
 ARG REPO_DOWNLOADER_ENABLED=true
 ARG WATCHMAN=false
 
@@ -60,15 +59,16 @@ RUN pip3 install --no-cache-dir --compile -r project-requirements.txt &&\
     pip3 install --no-cache-dir --compile -r certego-requirements.txt
 COPY . $PYTHONPATH
 
-COPY --from=frontend-build /build /var/www/reactapp
+COPY --from=frontend-build /opt/intel_owl/frontend/build /var/www/reactapp
+COPY intel_owl.ini /etc/uwsgi/sites/intel_owl.ini
 RUN touch ${LOG_PATH}/django/api_app.log ${LOG_PATH}/django/api_app_errors.log &&\
     touch ${LOG_PATH}/django/celery.log ${LOG_PATH}/django/celery_errors.log &&\
     touch ${LOG_PATH}/django/django_auth_ldap.log ${LOG_PATH}/django/django_errors.log &&\
     touch ${LOG_PATH}/django/certego_saas.log ${LOG_PATH}/django/certego_saas_errors.log &&\
     touch ${LOG_PATH}/django/authentication.log ${LOG_PATH}/django/authentication_errors.log &&\
+    touch /var/log/intel_owl/uwsgi/intel_owl.log &&\
     chown -R www-data:www-data ${LOG_PATH} /opt/deploy/ &&\
-    rm -rf /root/.local &&\
-    ${PYTHONPATH}/docker/scripts/watchman_install.sh &&\
-    ${PYTHONPATH}/api_app/analyzers_manager/repo_downloader.sh 
+    rm -rf /root/.local 
+    # /opt/intel_owl/api_app/analyzers_manager/repo_downloader.sh 
 ENV HOME ${PYTHONPATH}
-HEALTHCHECK --interval=10s --timeout=2s --start-period=40s --retries=5 CMD nc -z localhost 8001 || exit 1
+CMD [ "uwsgi", "--ini", "/etc/uwsgi/sites/intel_owl.ini" ]
