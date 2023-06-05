@@ -9,20 +9,18 @@ services:
     - postgres:/var/lib/postgresql/data/
     ports:
     - "5432"
-  intel_owl: # uwsgi is a backend server used to deploy Python apps like intel_owl
+  uwsgi:
     build: intel_owl
     image: intel_owl:latest
-    container_name: intel_owl
-    env_file:
-      - .env
+    container_name: uwsgi
     volumes:
-      - logs:/var/log/intel_owl
-      #- static_content:/opt/deploy/intel_owl/static
-      #- shared_files:/opt/deploy/files_required
+    - logs:/var/log/intel_owl
+    - web:/opt/deploy/intel_owl/static
     ports:
-      - "8001"
+    - "8001"
+    env_file: intel_owl/.env
     depends_on:
-      - postgres
+    - postgres
 # rabbitmq
 # celery_beat
 # celery_worker

@@ -1,74 +1,10 @@
-# Stage 1: Frontend
-FROM node:lts-alpine3.14 as frontend-build
+# Dockerfile metadata
+FROM intelowlproject/intelowl:v4.0.0
+LABEL Author="Victor Fernandez III, @cyberphor"
 
-# Download Intel Owl 
-WORKDIR /opt/intel_owl/
-RUN apk add --no-cache git &&\
-    git clone https://github.com/intelowlproject/IntelOwl . &&\
-    mkdir public/ &&\
-    cp docker/.env .env.local &&\
-    cp docker/env_template.js public/env.js
-RUN cd frontend/ &&\
-    npm install &&\
-    PUBLIC_URL=/static/reactapp/ npm run build 
-
-# Stage 2: Backend
-FROM python:3.9.16
-ENV PYTHONUNBUFFERED 1
-ENV DJANGO_SETTINGS_MODULE intel_owl.settings
-ENV PYTHONPATH /opt/deploy/intel_owl
-ENV LOG_PATH /var/log/intel_owl
-ENV ELASTICSEARCH_DSL_VERSION 7.2.2
-ENV watch_logs_cmd "watch -n1 tail -n10 /var/log/intel_owl/django/api_app.log"
-ENV PERL_MM_USE_DEFAULT 1
-ARG REPO_DOWNLOADER_ENABLED=true
-ARG WATCHMAN=false
-
-RUN mkdir -p \
-    ${LOG_PATH} \
-    ${LOG_PATH}/django \
-    ${LOG_PATH}/uwsgi \
-    /opt/deploy/files_required \
-    /opt/deploy/files_required/yara \
-    /opt/deploy/configuration
-
-RUN apt-get update &&\
-    apt-get install -y --no-install-recommends \
-      apt-utils \
-      libsasl2-dev \
-      libssl-dev \
-      netcat \
-      vim \
-      libldap2-dev \
-      python-dev \
-      libfuzzy-dev \
-      net-tools \
-      python3-psycopg2 \
-      git \
-      apache2-utils &&\
-    apt-get clean &&\
-    rm -rf /var/lib/apt/lists/* &&\
-    pip3 install --no-cache-dir --upgrade pip &&\
-    cpan -T Email::Outlook::Message
-
-COPY --from=frontend-build /opt/intel_owl/requirements/project-requirements.txt $PYTHONPATH/project-requirements.txt
-COPY --from=frontend-build /opt/intel_owl/requirements/certego-requirements.txt $PYTHONPATH/certego-requirements.txt
-WORKDIR $PYTHONPATH
-RUN pip3 install --no-cache-dir --compile -r project-requirements.txt &&\
-    pip3 install --no-cache-dir django-elasticsearch-dsl==${ELASTICSEARCH_DSL_VERSION} &&\
-    pip3 install --no-cache-dir --compile -r certego-requirements.txt
-COPY . $PYTHONPATH
-
-COPY --from=frontend-build /opt/intel_owl/frontend/build /var/www/reactapp
+COPY entrypoint.sh /opt/deploy/intel_owl/entrypoint.sh
+COPY configuration /opt/deploy/intel_owl/configuration/
 COPY intel_owl.ini /etc/uwsgi/sites/intel_owl.ini
-RUN touch ${LOG_PATH}/django/api_app.log ${LOG_PATH}/django/api_app_errors.log &&\
-    touch ${LOG_PATH}/django/celery.log ${LOG_PATH}/django/celery_errors.log &&\
-    touch ${LOG_PATH}/django/django_auth_ldap.log ${LOG_PATH}/django/django_errors.log &&\
-    touch ${LOG_PATH}/django/certego_saas.log ${LOG_PATH}/django/certego_saas_errors.log &&\
-    touch ${LOG_PATH}/django/authentication.log ${LOG_PATH}/django/authentication_errors.log &&\
-    touch /var/log/intel_owl/uwsgi/intel_owl.log &&\
-    chown -R www-data:www-data ${LOG_PATH} /opt/deploy/ &&\
-    rm -rf /root/.local 
-    # /opt/intel_owl/api_app/analyzers_manager/repo_downloader.sh 
-ENV HOME ${PYTHONPATH}
-CMD [ "uwsgi", "--ini", "/etc/uwsgi/sites/intel_owl.ini" ]
+
+# Run uWSGI
+ENTRYPOINT [ "/opt/deploy/intel_owl/entrypoint.sh" ]
