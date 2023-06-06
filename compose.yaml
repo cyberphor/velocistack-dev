@@ -2,45 +2,35 @@ services:
   postgres: # database
     build: postgres
     image: postgres:dev
-    container_name: postgres
     hostname: postgres
     env_file: postgres/.env
     volumes:
       - postgres:/var/lib/postgresql/data/
     ports:
       - 5432:5432
-    networks: 
-      - velocistack
   intelowl: # Web Server Gateway Interface between Nginx and Intel Owl (a Python/Django-based app)
     build: intelowl
     image: intelowl:dev
-    container_name: intelowl
     hostname: intelowl
     volumes:
       - logs:/var/log/intel_owl
       - web:/opt/deploy/intel_owl/static
-    networks: 
-      - velocistack
     ports:
       - 8001:8001
     env_file: intelowl/.env
     depends_on:
-      - postgres # 
-  rabbitmq: # message broker
+      - postgres 
+  rabbitmq: # message/task broker between front-end (Nginx/uWSGI) and back-end (Celery); task results > postgres
     build: rabbitmq
     image: rabbitmq:dev
-    container_name: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
-    networks:
-      - velocistack
-# celery_beat
-# celery_worker
+# celery_beat # task scheduler for Intel Owl
+# celery_worker # task off-loading for Intel Owl
   nginx:
     build: nginx
     image: nginx:dev
-    container_name: nginx
     hostname: nginx
     volumes:
       - certs:/etc/nginx/ssl
@@ -51,19 +41,13 @@ services:
       - "443:443"
     depends_on:
       - intelowl
-    networks:
-      - velocistack
 # velociraptor
 # elasticsearch:
 #   build: elasticsearch
 #   image: elasticsearch:dev
-#   container_name: elasticsearch
 #   env_file: .env
 #   volumes:
 #     - certs:/usr/share/elasticsearch/config/certs/
-#   networks: 
-#     velocistack:
-#       ipv4_address: ${ELASTICSEARCH_IP}
 #   ports:
 #     - 9200:9200
 #   extra_hosts:
@@ -79,14 +63,6 @@ services:
 
 volumes:
   certs:
-    name: certs
   logs:
-    name: logs
   postgres:
-    name: postgres
-  web:
-    name: web
-
-networks:
-  velocistack:
-    name: velocistack
+  web: 

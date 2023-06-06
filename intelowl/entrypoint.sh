@@ -29,3 +29,5 @@ else
     $CHANGELOG_NOTIFICATION_COMMAND
     /usr/local/bin/uwsgi --ini /etc/uwsgi/sites/intel_owl.ini
 fi
+
+# docker exec -ti intelowl_uwsgi python3 manage.py createsuperuser
