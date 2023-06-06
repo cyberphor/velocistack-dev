@@ -1,7 +1,7 @@
 services:
   postgres: # database
     build: postgres
-    image: postgres:latest
+    image: postgres:dev
     container_name: postgres
     hostname: postgres
     env_file: postgres/.env
@@ -11,11 +11,11 @@ services:
       - 5432:5432
     networks: 
       - velocistack
-  uwsgi:
-    build: uwsgi
-    image: uwsgi:latest
-    container_name: uwsgi
-    hostname: uwsgi
+  intelowl: # Web Server Gateway Interface between Nginx and Intel Owl (a Python/Django-based app)
+    build: intelowl
+    image: intelowl:dev
+    container_name: intelowl
+    hostname: intelowl
     volumes:
       - logs:/var/log/intel_owl
       - web:/opt/deploy/intel_owl/static
@@ -23,15 +23,23 @@ services:
       - velocistack
     ports:
       - 8001:8001
-    env_file: uwsgi/.env
+    env_file: intelowl/.env
     depends_on:
-      - postgres
-# rabbitmq
+      - postgres # 
+  rabbitmq: # message broker
+    build: rabbitmq
+    image: rabbitmq:dev
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - velocistack
 # celery_beat
 # celery_worker
   nginx:
     build: nginx
-    image: nginx:latest
+    image: nginx:dev
     container_name: nginx
     hostname: nginx
     volumes:
@@ -39,13 +47,16 @@ services:
       - logs:/var/log/nginx
       - web:/var/www/static
     ports:
-      - "8443:443"
+      - "80:80"
+      - "443:443"
     depends_on:
-      - uwsgi
+      - intelowl
+    networks:
+      - velocistack
 # velociraptor
 # elasticsearch:
 #   build: elasticsearch
-#   image: elasticsearch:latest
+#   image: elasticsearch:dev
 #   container_name: elasticsearch
 #   env_file: .env
 #   volumes:
@@ -79,5 +90,3 @@ volumes:
 networks:
   velocistack:
     name: velocistack
-    driver:  bridge
-    enable_ipv6: false

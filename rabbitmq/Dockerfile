@@ -1,3 +1,3 @@
 # Dockerfile metadata
-FROM rabbitmq
+FROM rabbitmq:3
 LABEL Author="Victor Fernandez III, @cyberphor"
