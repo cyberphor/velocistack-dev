@@ -3,34 +3,69 @@ services:
     build: postgres
     image: postgres:latest
     container_name: postgres
-    env_file:
-    - .env
+    hostname: postgres
+    env_file: postgres/.env
     volumes:
-    - postgres:/var/lib/postgresql/data/
+      - postgres:/var/lib/postgresql/data/
     ports:
-    - "5432"
+      - 5432:5432
+    networks: 
+      - velocistack
   uwsgi:
-    build: intel_owl
-    image: intel_owl:latest
+    build: uwsgi
+    image: uwsgi:latest
     container_name: uwsgi
+    hostname: uwsgi
     volumes:
-    - logs:/var/log/intel_owl
-    - web:/opt/deploy/intel_owl/static
+      - logs:/var/log/intel_owl
+      - web:/opt/deploy/intel_owl/static
+    networks: 
+      - velocistack
     ports:
-    - "8001"
-    env_file: intel_owl/.env
+      - 8001:8001
+    env_file: uwsgi/.env
     depends_on:
-    - postgres
+      - postgres
 # rabbitmq
 # celery_beat
 # celery_worker
-# nginx
+  nginx:
+    build: nginx
+    image: nginx:latest
+    container_name: nginx
+    hostname: nginx
+    volumes:
+      - certs:/etc/nginx/ssl
+      - logs:/var/log/nginx
+      - web:/var/www/static
+    ports:
+      - "8443:443"
+    depends_on:
+      - uwsgi
 # velociraptor
-# elasticsearch
+# elasticsearch:
+#   build: elasticsearch
+#   image: elasticsearch:latest
+#   container_name: elasticsearch
+#   env_file: .env
+#   volumes:
+#     - certs:/usr/share/elasticsearch/config/certs/
+#   networks: 
+#     velocistack:
+#       ipv4_address: ${ELASTICSEARCH_IP}
+#   ports:
+#     - 9200:9200
+#   extra_hosts:
+#     - "elasticsearch:${ELASTICSEARCH_IP}"
+#   healthcheck:
+#     test: ["CMD-SHELL", "curl ${ELASTICSEARCH_HOSTS} --cacert ${ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES} -u ${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}"]
+#     start_period: 30s
+#     retries: 2
 # kibana
 # grafana
 # prometheus
 # iris
+
 volumes:
   certs:
     name: certs
@@ -40,3 +75,9 @@ volumes:
     name: postgres
   web:
     name: web
+
+networks:
+  velocistack:
+    name: velocistack
+    driver:  bridge
+    enable_ipv6: false
