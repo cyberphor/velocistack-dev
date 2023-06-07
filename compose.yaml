@@ -47,7 +47,7 @@ services:
     depends_on:
       - rabbitmq
       - postgres
-  nginx:
+  nginx: # front-end web server
     build: nginx
     image: nginx:dev
     hostname: nginx
@@ -60,7 +60,7 @@ services:
       - "443:443"
     depends_on:
       - intelowl
-  velociraptor:
+  velociraptor: 
     build: velociraptor
     image: velociraptor:dev
     volumes:
@@ -69,7 +69,7 @@ services:
     env_file: velociraptor/.env
     ports:
       - "8000:8000"
-      - "8001:8001"
+    # - "8001:8001"
       - "8889:8889"
 # elasticsearch:
 #   build: elasticsearch
