@@ -26,8 +26,27 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-# celery_beat # task scheduler for Intel Owl
-# celery_worker # task off-loading for Intel Owl
+  celery-beat: # schedules tasks for Intel Owl
+    build: celery-beat
+    image: celery-beat:dev
+    volumes:
+      - logs:/var/log/intel_owl
+      - shared:/opt/deploy/files_required
+    env_file: celery-beat/.env
+    depends_on:
+      - postgres
+      - rabbitmq
+      - intelowl
+  celery-worker: # off-loads tasks for Intel Owl
+    build: celery-worker
+    image: celery-worker:dev
+    volumes:
+      - logs:/var/log/intel_owl
+      - shared:/opt/deploy/files_required
+    env_file: celery-worker/.env
+    depends_on:
+      - rabbitmq
+      - postgres
   nginx:
     build: nginx
     image: nginx:dev
@@ -41,7 +60,17 @@ services:
       - "443:443"
     depends_on:
       - intelowl
-# velociraptor
+  velociraptor:
+    build: velociraptor
+    image: velociraptor:dev
+    volumes:
+      - velociraptor_data:/opt/velociraptor/:rw
+      - velociraptor_api:/api/
+    env_file: velociraptor/.env
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8889:8889"
 # elasticsearch:
 #   build: elasticsearch
 #   image: elasticsearch:dev
@@ -66,3 +95,6 @@ volumes:
   logs:
   postgres:
   web: 
+  shared:
+  velociraptor_data:
+  velociraptor_api:
