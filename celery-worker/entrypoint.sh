@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 until cd /opt/deploy/intel_owl
 do

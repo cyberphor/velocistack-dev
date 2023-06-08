@@ -1,6 +1,7 @@
 # Dockerfile metadata
 FROM kibana:8.7.1
-LABEL Author="Victor Fernandez III, @cyberphor"
+LABEL maintainer="Wes Lambert, @therealwlambert"
+LABEL contributor="Victor Fernandez III, @cyberphor"
 
 # Copy Kibana configuration files
 COPY . .

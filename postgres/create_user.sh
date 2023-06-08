@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 
 POSTGRES="psql --username ${POSTGRES_USER}"

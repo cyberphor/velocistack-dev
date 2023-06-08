@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Get the user's API key from iris-db
 api_key=$(docker exec -it iris-db /bin/bash -c "/usr/local/bin/psql -U postgres -d iris_db -c 'SELECT api_key FROM \"user\"';" | sed -n 3p | sed -e "s/^[[:space:]]*//" | sed 's/\r$//' )

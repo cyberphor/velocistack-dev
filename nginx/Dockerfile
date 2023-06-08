@@ -1,6 +1,7 @@
 # Dockerfile metadata
 FROM intelowlproject/intelowl_nginx:v4.0.0
-LABEL Author="Victor Fernandez III, @cyberphor"
+LABEL maintainer="Wes Lambert, @therealwlambert"
+LABEL contributor="Victor Fernandez III, @cyberphor"
 
 # Install OpenSSL
 RUN apk add openssl 

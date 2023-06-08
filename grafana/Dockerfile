@@ -1,3 +1,4 @@
 # Dockerfile metadata
 FROM grafana/grafana
-LABEL Author="Victor Fernandez III, @cyberphor"
+LABEL maintainer="Wes Lambert, @therealwlambert"
+LABEL contributor="Victor Fernandez III, @cyberphor"
