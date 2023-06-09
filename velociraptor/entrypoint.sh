@@ -11,9 +11,9 @@ fi
 velociraptor --config server.config.yaml config client > client.config.yaml
 
 # Repack clients
-velociraptor config repack --exe binaries/linux/velociraptor_client client.config.yaml binaries/linux/velociraptor_client_repacked
-velociraptor config repack --exe binaries/mac/velociraptor_client client.config.yaml binaries/mac/velociraptor_client_repacked
-velociraptor config repack --exe binaries/windows/velociraptor_client.exe client.config.yaml binaries/windows/velociraptor_client_repacked.exe
+#velociraptor config repack --exe binaries/linux/velociraptor client.config.yaml binaries/linux/velociraptor_repacked
+#velociraptor config repack --exe binaries/mac/velociraptor client.config.yaml binaries/mac/velociraptor_repacked
+#velociraptor config repack --exe binaries/windows/velociraptor.exe client.config.yaml binaries/windows/velociraptor_repacked.exe
 
 # Update config file
 velociraptor --config server.config.yaml config api_client --name dfir-iris-modules --role investigator,api api.config.yaml

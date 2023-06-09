@@ -1,14 +1,13 @@
 # Dockerfile metadata
 FROM elasticsearch:8.7.1
-LABEL maintainer="Wes Lambert, @therealwlambert"
-LABEL contributor="Victor Fernandez III, @cyberphor"
+LABEL Author="Victor Fernandez III, @cyberphor"
 
 # Copy Elasticsearch configuration files
-COPY elasticsearch.yml elasticsearch.yml
-COPY instances.yml certs/instances.yml
+USER root
+COPY elasticsearch.yml config/elasticsearch.yml
+COPY instances.yml config/certs/instances.yml
 
 # Generate a CA certificate (needed to sign X.509 certificates)
-USER root
 RUN elasticsearch-certutil ca --silent --pem \
     --out config/certs/ca.zip &&\
     unzip config/certs/ca.zip -d config/certs 
@@ -23,8 +22,7 @@ RUN elasticsearch-certutil cert --silent --pem \
 
 # Reorganize and restrict Elasticsearch files
 RUN mv config/certs/*/* config/certs/ &&\
-    rm -r config/certs/instances.yml config/certs/*/ config/certs/*.zip &&\
-    chmod g+w config/ 
+    rm -r config/certs/instances.yml config/certs/*/ config/certs/*.zip 
 
 # Switch user accounts back to Elasticsearch
 USER elasticsearch
