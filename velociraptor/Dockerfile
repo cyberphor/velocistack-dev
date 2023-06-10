@@ -39,6 +39,7 @@ RUN RELEASES=$(wget -qO - "https://api.github.com/repos/velocidex/velociraptor/r
 # Copy Velociraptor configuration files
 COPY custom/ /opt/velociraptor/artifact_definitions/
 COPY entrypoint.sh /opt/velociraptor/entrypoint.sh
+COPY config.json /opt/velociraptor/config.json
 
 # Copy Cyber Chef and Velociraptor files to another image
 FROM ubuntu:20.04
@@ -48,5 +49,5 @@ COPY --from=BUILDER /opt/velociraptor/ /opt/velociraptor/
 # Run Cyber Chef and Velociraptor
 ENV PATH="/opt/velociraptor:$PATH"
 WORKDIR /opt/velociraptor/
-ENTRYPOINT [ "entrypoint.sh" ]
+#ENTRYPOINT [ "entrypoint.sh" ]
 CMD [ "velociraptor", "--config", "server.config.yaml", "frontend", "-v" ]

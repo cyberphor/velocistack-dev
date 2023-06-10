@@ -5,7 +5,7 @@ services:
     image: postgres:dev
     container_name: postgres
     hostname: postgres
-    env_file: postgres/.env
+    env_file: .env
     volumes:
       - postgres:/var/lib/postgresql/data/
     ports:
@@ -21,7 +21,7 @@ services:
       - web:/opt/deploy/intel_owl/static
     ports:
       - "8008:8008"
-    env_file: intelowl/.env
+    env_file: .env
     depends_on:
       - postgres 
   rabbitmq: # message/task broker between front-end (Nginx/uWSGI) and back-end (Celery); task results > postgres
@@ -33,6 +33,7 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    env_file: .env
   celery-beat: # schedules tasks for Intel Owl
     profiles: [ "velocistack", "intelowl" ]
     build: celery-beat
@@ -42,7 +43,7 @@ services:
     volumes:
       - logs:/var/log/intel_owl
       - shared:/opt/deploy/files_required
-    env_file: celery-beat/.env
+    env_file: .env
     depends_on:
       - postgres
       - rabbitmq
@@ -51,7 +52,7 @@ services:
     profiles: [ "velocistack", "intelowl" ]
     build: celery-worker
     image: celery-worker:dev
-    env_file: celery-worker/.env
+    env_file: .env
     container_name: celery-worker
     hostname: celery-worker
     volumes:
@@ -80,7 +81,7 @@ services:
     profiles: [ "velocistack", "velociraptor", "intelowl" ]
     build: velociraptor
     image: velociraptor:dev
-    env_file: velociraptor/.env
+    env_file: .env
     container_name: velociraptor
     hostname: velociraptor
     volumes:
