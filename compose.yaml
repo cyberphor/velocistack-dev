@@ -1,6 +1,6 @@
 services:
   postgres: # database
-    profiles: [ "velocistack", "intelowl" ]
+    profiles: [ "velocistack", "velociraptor", "intelowl", "postgres" ]
     build: postgres
     image: postgres:dev
     container_name: postgres
@@ -11,7 +11,7 @@ services:
     ports:
       - "5432:5432"
   intelowl: # Web Server Gateway Interface between Nginx and Intel Owl (a Python/Django-based app)
-    profiles: [ "velocistack", "intelowl" ]
+    profiles: [ "velocistack", "velociraptor", "intelowl" ]
     build: intelowl
     image: intelowl:dev
     container_name: intelowl
@@ -25,7 +25,7 @@ services:
     depends_on:
       - postgres 
   rabbitmq: # message/task broker between front-end (Nginx/uWSGI) and back-end (Celery); task results > postgres
-    profiles: [ "velocistack", "intelowl" ]
+    profiles: [ "velocistack", "intelowl", "rabbitmq" ]
     build: rabbitmq
     image: rabbitmq:dev
     container_name: rabbitmq
@@ -35,7 +35,7 @@ services:
       - "5672:5672"
       - "15672:15672"
   celery-beat: # schedules tasks for Intel Owl
-    profiles: [ "velocistack", "intelowl" ]
+    profiles: [ "velocistack", "intelowl", "celery-beat" ]
     build: celery-beat
     image: celery-beat:dev
     container_name: celery-beat
@@ -61,6 +61,20 @@ services:
     depends_on:
       - rabbitmq
       - postgres
+  velociraptor: 
+    profiles: [ "velocistack", "velociraptor", "intelowl" ]
+    build: velociraptor
+    image: velociraptor:dev
+    container_name: velociraptor
+    hostname: velociraptor
+    env_file: .env
+    volumes:
+      - velociraptor_data:/opt/velociraptor/:rw
+      - velociraptor_api:/api/
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8889:8889"
   nginx: # front-end web server
     profiles: [ "velocistack", "velociraptor", "intelowl", "iris", "prometheus" ]
     build: nginx
@@ -77,20 +91,6 @@ services:
     depends_on:
       - intelowl # upstream server needs to be up first for redirection
       - velociraptor # upstream server needs to be up first for redirection
-  velociraptor: 
-    profiles: [ "velocistack", "velociraptor", "intelowl" ]
-    build: velociraptor
-    image: velociraptor:dev
-    container_name: velociraptor
-    hostname: velociraptor
-    env_file: .env
-    volumes:
-      - velociraptor_data:/opt/velociraptor/:rw
-      - velociraptor_api:/api/
-    ports:
-      - "8000:8000"
-      - "8001:8001"
-      - "8889:8889"
   elasticsearch:
     profiles: [ "velocistack", "elastic" ]
     build: elasticsearch
@@ -132,10 +132,29 @@ services:
         ipv4_address: ${KIBANA_IP}
     healthcheck:
       test: [ "CMD-SHELL", "curl http://${KIBANA_IP}:${KIBANA_PORT} -I -s | grep -q 'HTTP/1.1 302 Found'", ]
-# grafana
-#   profiles: [ "velocistack", "grafana" ]
-# prometheus
-#   profiles: [ "velocistack", "prometheus" ]
+  prometheus:
+    profiles: [ "velocistack", "grafana", "prometheus" ]
+    build: prometheus
+    image: prometheus:dev
+    container_name: prometheus
+    hostname: prometheus
+    env_file: .env
+    ports:
+      - "9090:9090"
+    #depends_on:
+    #  - cadvisor
+  grafana:
+    profiles: [ "velocistack", "grafana" ]
+    build: grafana
+    image: grafana:dev
+    container_name: grafana
+    hostname: grafana
+    env_file: .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
 # iris
 #   profiles: [ "velocistack", "iris" ]
 

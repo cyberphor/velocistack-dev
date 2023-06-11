@@ -15,8 +15,8 @@ velociraptor config repack --exe binaries/mac/velociraptor client.config.yaml bi
 velociraptor config repack --exe binaries/windows/velociraptor.exe client.config.yaml binaries/windows/velociraptor_repacked.exe
 
 # Update config file
-#velociraptor --config server.config.yaml config api_client --name dfir-iris-modules --role investigator,api api.config.yaml
-#sed -i 's|0.0.0.0|velociraptor|' api.config.yaml 
+velociraptor --config server.config.yaml config api_client --name dfir-iris-modules --role investigator,api api.config.yaml
+sed -i 's|0.0.0.0|velociraptor|' api.config.yaml 
 
 # Get the user's API key from iris-db
 # api_key=$(docker exec -it iris-db /bin/bash -c "/usr/local/bin/psql -U postgres -d iris_db -c 'SELECT api_key FROM \"user\"';" | sed -n 3p | sed -e "s/^[[:space:]]*//" | sed 's/\r$//' )

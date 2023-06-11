@@ -16,6 +16,9 @@ RUN mkdir -p \
       /opt/velociraptor/binaries/mac/ \
       /opt/velociraptor/binaries/windows/
 
+# Update the environment path
+ENV PATH="/opt/velociraptor:$PATH"
+
 # Download the latest release of Cyber Chef
 RUN wget -qO     /opt/cyberchef/releases.json "https://api.github.com/repos/gchq/CyberChef/releases/latest" &&\
     LATEST=$(cat /opt/cyberchef/releases.json | jq -r 'limit(1 ; ( .assets[].browser_download_url))') &&\
@@ -39,12 +42,12 @@ RUN wget -qO  /opt/velociraptor/releases.json "https://api.github.com/repos/velo
     rm -f /tmp/velociraptor_releases.json
 
 # Copy Velociraptor configuration files
-#COPY custom/ /opt/velociraptor/artifact_definitions/
-#COPY entrypoint.sh /opt/velociraptor/entrypoint.sh
-#COPY config.json /opt/velociraptor/config.json
+COPY config.json /opt/velociraptor/config.json
+COPY entrypoint.sh /opt/velociraptor/entrypoint.sh
+COPY custom/ /opt/velociraptor/artifact_definitions/
+RUN chmod u+x /opt/velociraptor/entrypoint.sh
 
 # Run Cyber Chef and Velociraptor
-ENV PATH="/opt/velociraptor:$PATH"
 WORKDIR /opt/velociraptor/
-#ENTRYPOINT [ "entrypoint.sh" ]
+ENTRYPOINT [ "/opt/velociraptor/entrypoint.sh" ]
 CMD [ "velociraptor", "--config", "server.config.yaml", "frontend", "-v" ]
