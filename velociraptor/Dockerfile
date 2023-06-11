@@ -1,12 +1,13 @@
 # Dockerfile metadata
-FROM alpine:3.18 as BUILDER
+FROM debian:stable-slim
 LABEL version="Velociraptor v0.6.7"
 LABEL description="Velociraptor server in a Docker container"
 LABEL maintainer="Wes Lambert, @therealwlambert"
 LABEL contributor="Victor Fernandez III, @cyberphor"
 
-# Install tools needed to download Velociraptor and Cyber Chef
-RUN apk add jq rsync unzip
+# Install tools needed to download Veloc iraptor and Cyber Chef
+RUN apt-get update &&\
+    apt-get install -y wget jq rsync unzip
 
 # Create directories for Velociraptor & Cyber Chef binaries
 RUN mkdir -p \
@@ -16,35 +17,31 @@ RUN mkdir -p \
       /opt/velociraptor/binaries/windows/
 
 # Download the latest release of Cyber Chef
-RUN RELEASE=$(wget -qO - "https://api.github.com/repos/gchq/CyberChef/releases/latest") &&\
-    LATEST=$(echo $RELEASE | jq -r 'limit(1 ; ( .assets[].browser_download_url))') &&\
-    wget -q "$LATEST" -O /tmp/cyberchef.zip &&\
-    unzip -o /tmp/cyberchef.zip -d /opt/cyberchef/ &&\
-    rm -f /tmp/cyberchef.zip &&\
-    mv /opt/cyberchef/CyberChef_*.html /opt/cyberchef/index.html 
+RUN wget -qO     /opt/cyberchef/releases.json "https://api.github.com/repos/gchq/CyberChef/releases/latest" &&\
+    LATEST=$(cat /opt/cyberchef/releases.json | jq -r 'limit(1 ; ( .assets[].browser_download_url))') &&\
+    wget -qO /tmp/cyberchef.zip "$LATEST" &&\
+    unzip /tmp/cyberchef.zip -d /opt/cyberchef/ &&\
+    mv /opt/cyberchef/CyberChef_*.html /opt/cyberchef/index.html &&\
+    rm -f /opt/cyberchef/releases.json /tmp/cyberchef.zip 
 
 # Download the latest releases of Velociraptor
-RUN RELEASES=$(wget -qO - "https://api.github.com/repos/velocidex/velociraptor/releases/latest") &&\
-    NIX=$(echo $RELEASES | jq -r 'limit(1 ; ( .assets[].browser_download_url | select ( contains("linux-amd64") )))') &&\
-    MAC=$(echo $RELEASES | jq -r 'limit(1 ; ( .assets[].browser_download_url | select ( contains("darwin-amd64") )))') &&\
-    EXE=$(echo $RELEASES | jq -r 'limit(1 ; ( .assets[].browser_download_url | select ( contains("windows-amd64.exe") )))') &&\
-    MSI=$(echo $RELEASES | jq -r 'limit(1 ; ( .assets[].browser_download_url | select ( contains("windows-amd64.msi") )))') &&\
-    wget -q "$NIX" -O /opt/velociraptor/binaries/linux/velociraptor &&\
-    wget -q "$MAC" -O /opt/velociraptor/binaries/mac/velociraptor &&\
-    wget -q "$EXE" -O /opt/velociraptor/binaries/windows/velociraptor.exe  &&\
-    wget -q "$MSI" -O /opt/velociraptor/binaries/windows/velociraptor.msi &&\
+RUN wget -qO  /opt/velociraptor/releases.json "https://api.github.com/repos/velocidex/velociraptor/releases/latest" &&\
+    NIX=$(cat /opt/velociraptor/releases.json | jq -r 'limit(1 ; ( .assets[].browser_download_url | select ( contains("linux-amd64") )))') &&\
+    MAC=$(cat /opt/velociraptor/releases.json | jq -r 'limit(1 ; ( .assets[].browser_download_url | select ( contains("darwin-amd64") )))') &&\
+    EXE=$(cat /opt/velociraptor/releases.json | jq -r 'limit(1 ; ( .assets[].browser_download_url | select ( contains("windows-amd64.exe") )))') &&\
+    MSI=$(cat /opt/velociraptor/releases.json | jq -r 'limit(1 ; ( .assets[].browser_download_url | select ( contains("windows-amd64.msi") )))') &&\
+    wget -qO  /opt/velociraptor/binaries/linux/velociraptor "$NIX" &&\
+    wget -qO  /opt/velociraptor/binaries/mac/velociraptor "$MAC" &&\
+    wget -qO  /opt/velociraptor/binaries/windows/velociraptor.exe "$EXE" &&\
+    wget -qO  /opt/velociraptor/binaries/windows/velociraptor.msi "$MSI" &&\
     cp /opt/velociraptor/binaries/linux/velociraptor /opt/velociraptor/velociraptor &&\
-    chmod +x /opt/velociraptor/velociraptor
+    chmod +x /opt/velociraptor/velociraptor &&\
+    rm -f /tmp/velociraptor_releases.json
 
 # Copy Velociraptor configuration files
-COPY custom/ /opt/velociraptor/artifact_definitions/
-COPY entrypoint.sh /opt/velociraptor/entrypoint.sh
-COPY config.json /opt/velociraptor/config.json
-
-# Copy Cyber Chef and Velociraptor files to another image
-FROM ubuntu:20.04
-COPY --from=BUILDER /opt/cyberchef/ /opt/cyberchef/
-COPY --from=BUILDER /opt/velociraptor/ /opt/velociraptor/
+#COPY custom/ /opt/velociraptor/artifact_definitions/
+#COPY entrypoint.sh /opt/velociraptor/entrypoint.sh
+#COPY config.json /opt/velociraptor/config.json
 
 # Run Cyber Chef and Velociraptor
 ENV PATH="/opt/velociraptor:$PATH"

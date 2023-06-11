@@ -16,12 +16,12 @@ services:
     image: intelowl:dev
     container_name: intelowl
     hostname: intelowl
+    env_file: .env
     volumes:
       - logs:/var/log/intel_owl
       - web:/opt/deploy/intel_owl/static
     ports:
       - "8008:8008"
-    env_file: .env
     depends_on:
       - postgres 
   rabbitmq: # message/task broker between front-end (Nginx/uWSGI) and back-end (Celery); task results > postgres
@@ -30,20 +30,20 @@ services:
     image: rabbitmq:dev
     container_name: rabbitmq
     hostname: rabbitmq
+    env_file: .env
     ports:
       - "5672:5672"
       - "15672:15672"
-    env_file: .env
   celery-beat: # schedules tasks for Intel Owl
     profiles: [ "velocistack", "intelowl" ]
     build: celery-beat
     image: celery-beat:dev
     container_name: celery-beat
     hostname: celery-beat
+    env_file: .env
     volumes:
       - logs:/var/log/intel_owl
       - shared:/opt/deploy/files_required
-    env_file: .env
     depends_on:
       - postgres
       - rabbitmq
@@ -52,9 +52,9 @@ services:
     profiles: [ "velocistack", "intelowl" ]
     build: celery-worker
     image: celery-worker:dev
-    env_file: .env
     container_name: celery-worker
     hostname: celery-worker
+    env_file: .env
     volumes:
       - logs:/var/log/intel_owl
       - shared:/opt/deploy/files_required
@@ -81,9 +81,9 @@ services:
     profiles: [ "velocistack", "velociraptor", "intelowl" ]
     build: velociraptor
     image: velociraptor:dev
-    env_file: .env
     container_name: velociraptor
     hostname: velociraptor
+    env_file: .env
     volumes:
       - velociraptor_data:/opt/velociraptor/:rw
       - velociraptor_api:/api/
@@ -95,16 +95,16 @@ services:
     profiles: [ "velocistack", "elastic" ]
     build: elasticsearch
     image: elasticsearch:dev
-    env_file: .env
     container_name: elasticsearch
     hostname: elasticsearch
+    env_file: .env
     volumes:
       - certs:/usr/share/elasticsearch/config/certs/
+    ports:
+      - "9200:9200"
     networks: 
       velocistack:
         ipv4_address: ${ES_IP}
-    ports:
-      - "9200:9200"
     healthcheck:
       test: ["CMD-SHELL", "curl ${ES_HOST} --cacert ${ES_PUBLIC_KEY} -u ${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}"]
       start_period: 10s
@@ -117,19 +117,19 @@ services:
       elasticsearch:
         condition: service_healthy
     build: kibana
-    image: kibana:latest
-    env_file: .env
+    image: kibana:dev
     container_name: kibana
     hostname: kibana
+    env_file: .env
     volumes:
       - certs:/usr/share/kibana/config/certs/
+    ports:
+      - "${KIBANA_PORT}:${KIBANA_PORT}"
     extra_hosts:
       - "elasticsearch:${ES_IP}"
     networks: 
       velocistack:
         ipv4_address: ${KIBANA_IP}
-    ports:
-      - "${KIBANA_PORT}:${KIBANA_PORT}"
     healthcheck:
       test: [ "CMD-SHELL", "curl http://${KIBANA_IP}:${KIBANA_PORT} -I -s | grep -q 'HTTP/1.1 302 Found'", ]
 # grafana
