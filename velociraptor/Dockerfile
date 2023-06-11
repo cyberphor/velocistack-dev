@@ -45,9 +45,8 @@ RUN wget -qO  /opt/velociraptor/releases.json "https://api.github.com/repos/velo
 COPY config.json /opt/velociraptor/config.json
 COPY entrypoint.sh /opt/velociraptor/entrypoint.sh
 COPY custom/ /opt/velociraptor/artifact_definitions/
-RUN chmod u+x /opt/velociraptor/entrypoint.sh
 
 # Run Cyber Chef and Velociraptor
 WORKDIR /opt/velociraptor/
-ENTRYPOINT [ "/opt/velociraptor/entrypoint.sh" ]
-CMD [ "velociraptor", "--config", "server.config.yaml", "frontend", "-v" ]
+ENTRYPOINT [ "/bin/sh", "/opt/velociraptor/entrypoint.sh" ]
+#CMD [ "velociraptor", "--config", "server.config.yaml", "frontend", "-v" ]
