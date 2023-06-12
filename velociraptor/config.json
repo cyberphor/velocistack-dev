@@ -56,7 +56,7 @@
 	},
 	"Client": {
 		"server_urls": [
-			"'$VELO_SERVER_URL'"
+			"https://VelociraptorServer:8000/"
 		],
 		"use_self_signed_ssl": true
 	},

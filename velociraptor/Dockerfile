@@ -20,7 +20,7 @@ RUN mkdir -p \
 ENV PATH="/opt/velociraptor:$PATH"
 
 # Download the latest release of Cyber Chef
-RUN wget -qO     /opt/cyberchef/releases.json "https://api.github.com/repos/gchq/CyberChef/releases/latest" &&\
+RUN wget -qO /opt/cyberchef/releases.json "https://api.github.com/repos/gchq/CyberChef/releases/latest" &&\
     LATEST=$(cat /opt/cyberchef/releases.json | jq -r 'limit(1 ; ( .assets[].browser_download_url))') &&\
     wget -qO /tmp/cyberchef.zip "$LATEST" &&\
     unzip /tmp/cyberchef.zip -d /opt/cyberchef/ &&\
@@ -49,4 +49,4 @@ COPY custom/ /opt/velociraptor/artifact_definitions/
 # Run Cyber Chef and Velociraptor
 WORKDIR /opt/velociraptor/
 ENTRYPOINT [ "/bin/sh", "/opt/velociraptor/entrypoint.sh" ]
-#CMD [ "velociraptor", "--config", "server.config.yaml", "frontend", "-v" ]
+CMD [ "velociraptor", "--config", "server.config.yaml", "frontend", "-v" ]

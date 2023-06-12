@@ -1,6 +1,6 @@
 services:
   postgres: # database
-    profiles: [ "velocistack", "velociraptor", "intelowl", "postgres" ]
+    profiles: [ "velocistack", "intelowl", "postgres" ]
     build: postgres
     image: postgres:dev
     container_name: postgres
@@ -11,7 +11,7 @@ services:
     ports:
       - "5432:5432"
   intelowl: # Web Server Gateway Interface between Nginx and Intel Owl (a Python/Django-based app)
-    profiles: [ "velocistack", "velociraptor", "intelowl" ]
+    profiles: [ "velocistack", "intelowl" ]
     build: intelowl
     image: intelowl:dev
     container_name: intelowl
@@ -62,7 +62,7 @@ services:
       - rabbitmq
       - postgres
   velociraptor: 
-    profiles: [ "velocistack", "velociraptor", "intelowl" ]
+    profiles: [ "velocistack", "velociraptor" ]
     build: velociraptor
     image: velociraptor:dev
     container_name: velociraptor
@@ -76,7 +76,7 @@ services:
       - "8001:8001"
       - "8889:8889"
   nginx: # front-end web server
-    profiles: [ "velocistack", "velociraptor", "intelowl", "iris", "prometheus" ]
+    profiles: [ "velocistack", "intelowl", "iris", "prometheus" ]
     build: nginx
     image: nginx:dev
     container_name: nginx
