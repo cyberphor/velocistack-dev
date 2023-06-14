@@ -7,14 +7,15 @@ LABEL contributor="Victor Fernandez III, @cyberphor"
 
 # Install tools needed to download Veloc iraptor and Cyber Chef
 RUN apt-get update &&\
-    apt-get install -y wget jq rsync unzip
+    apt-get install -y wget jq unzip
 
 # Create directories for Velociraptor & Cyber Chef binaries
 RUN mkdir -p \
       /opt/cyberchef/ \
       /opt/velociraptor/binaries/linux/ \
       /opt/velociraptor/binaries/mac/ \
-      /opt/velociraptor/binaries/windows/
+      /opt/velociraptor/binaries/windows/ \
+      /opt/velociraptor/icons/
 
 # Update the environment path
 ENV PATH="/opt/velociraptor:$PATH"
@@ -42,11 +43,12 @@ RUN wget -qO  /opt/velociraptor/releases.json "https://api.github.com/repos/velo
     rm -f /tmp/velociraptor_releases.json
 
 # Copy Velociraptor configuration files
-COPY config.json /opt/velociraptor/config.json
 COPY entrypoint.sh /opt/velociraptor/entrypoint.sh
 COPY custom/ /opt/velociraptor/artifact_definitions/
+COPY icons/kibana.svg /opt/velociraptor/icons/kibana.svg
+COPY server.config.json /opt/velociraptor/server.config.json
 
 # Run Cyber Chef and Velociraptor
 WORKDIR /opt/velociraptor/
-ENTRYPOINT [ "/bin/sh", "/opt/velociraptor/entrypoint.sh" ]
-CMD [ "velociraptor", "--config", "server.config.yaml", "frontend", "-v" ]
+ENTRYPOINT [ "/opt/velociraptor/entrypoint.sh" ]
+CMD [ "velociraptor", "frontend", "--config", "server.config.yaml", "-v" ]

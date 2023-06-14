@@ -72,11 +72,12 @@ services:
       - velociraptor_data:/opt/velociraptor/:rw
       - velociraptor_api:/api/
     ports:
-      - "8000:8000"
-      - "8001:8001"
-      - "8889:8889"
+      - "8000:8000" # server-to-client communication (aka "frontend")
+      - "8001:8001" # API requests (aka "gRPC API server")
+      - "8003:8003" # Prometheus monitoring server
+      - "8889:8889" # admin console (aka "GUI")
   nginx: # front-end web server
-    profiles: [ "velocistack", "intelowl", "iris", "prometheus" ]
+    profiles: [ "velocistack", "nginx" ]
     build: nginx
     image: nginx:dev
     container_name: nginx
@@ -132,8 +133,21 @@ services:
         ipv4_address: ${KIBANA_IP}
     healthcheck:
       test: [ "CMD-SHELL", "curl http://${KIBANA_IP}:${KIBANA_PORT} -I -s | grep -q 'HTTP/1.1 302 Found'", ]
+  cadvisor:
+    profiles: [ "velocistack", "prometheus", "cadvisor" ] 
+    build: cadvisor
+    image: cadvisor:dev 
+    container_name: cadvisor
+    hostname: cadvisor
+    ports:
+      - "8080:8080"
+    #volumes:
+    # - /:/rootfs:ro
+    # - /var/run:/var/run:rw
+    # - /sys:/sys:ro
+    # - /var/lib/docker:/var/lib/docker:ro
   prometheus:
-    profiles: [ "velocistack", "grafana", "prometheus" ]
+    profiles: [ "velocistack", "prometheus" ]
     build: prometheus
     image: prometheus:dev
     container_name: prometheus
@@ -141,8 +155,8 @@ services:
     env_file: .env
     ports:
       - "9090:9090"
-    #depends_on:
-    #  - cadvisor
+    depends_on:
+      - cadvisor
   grafana:
     profiles: [ "velocistack", "grafana" ]
     build: grafana
@@ -154,9 +168,15 @@ services:
       - "3000:3000"
     depends_on:
       - prometheus
-
-# iris
-#   profiles: [ "velocistack", "iris" ]
+  iris:
+    profiles: [ "velocistack", "iris" ]
+    build: iris
+    image: iris:dev
+    container_name: iris
+    hostname: iris
+    env_file: .env
+    #ports:
+    # - "8000:8000"
 
 volumes:
   certs:
