@@ -11,22 +11,12 @@ RUN apt-get update &&\
 
 # Create directories for Velociraptor & Cyber Chef binaries
 RUN mkdir -p \
-      /opt/cyberchef/ \
       /opt/velociraptor/binaries/linux/ \
       /opt/velociraptor/binaries/mac/ \
-      /opt/velociraptor/binaries/windows/ \
-      /opt/velociraptor/icons/
+      /opt/velociraptor/binaries/windows/ 
 
 # Update the environment path
 ENV PATH="/opt/velociraptor:$PATH"
-
-# Download the latest release of Cyber Chef
-RUN wget -qO /opt/cyberchef/releases.json "https://api.github.com/repos/gchq/CyberChef/releases/latest" &&\
-    LATEST=$(cat /opt/cyberchef/releases.json | jq -r 'limit(1 ; ( .assets[].browser_download_url))') &&\
-    wget -qO /tmp/cyberchef.zip "$LATEST" &&\
-    unzip /tmp/cyberchef.zip -d /opt/cyberchef/ &&\
-    mv /opt/cyberchef/CyberChef_*.html /opt/cyberchef/index.html &&\
-    rm -f /opt/cyberchef/releases.json /tmp/cyberchef.zip 
 
 # Download the latest releases of Velociraptor
 RUN wget -qO  /opt/velociraptor/releases.json "https://api.github.com/repos/velocidex/velociraptor/releases/latest" &&\
@@ -45,7 +35,6 @@ RUN wget -qO  /opt/velociraptor/releases.json "https://api.github.com/repos/velo
 # Copy Velociraptor configuration files
 COPY entrypoint.sh /opt/velociraptor/entrypoint.sh
 COPY custom/ /opt/velociraptor/artifact_definitions/
-COPY icons/kibana.svg /opt/velociraptor/icons/kibana.svg
 COPY server.config.json /opt/velociraptor/server.config.json
 
 # Run Cyber Chef and Velociraptor

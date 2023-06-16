@@ -12,11 +12,9 @@ Velocistack is a free and open solution for streamlined host-based forensics and
 - Enrich results with additional context
 
 ### Why was Velocistack created?
-
 To allow individuals to quickly spin up a local, integrated environment for analysis and investigation of forensic artifacts collected by Velociraptor, using popular free and open tools.
 
 ### Who should use Velocistack?
-
 - Analysts
 - Incident Responders
 - Students
@@ -99,6 +97,23 @@ Create superuser credentials for IntelOwl by running the following command from 
 #### Kibana
 `https://$YOURIP/velocistack/kibana`
 
-
 ### Troubleshooting
 If you experience an error with `cadvisor` and `/var/lib/docker`, try replacing the volume with `/var/snap/docker/common/var-lib-docker/` (for Docker installs that have occurred via `snap`).
+
+### Network Diagram
+```mermaid
+flowchart TD
+    velociraptor --> cyber_chef
+    velociraptor --> kibana 
+        kibana --> elasticsearch
+    velociraptor --> zinc
+    velociraptor --> nginx 
+        nginx --> intel_owl
+            intel_owl --> rabbitmq --> postgres
+            intel_owl --> celery_beat
+            intel_owl --> celery_worker 
+        nginx --> iris
+    velociraptor --> prometheus
+        prometheus --> cadvisor
+    velociraptor --> grafana
+```

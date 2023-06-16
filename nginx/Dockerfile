@@ -14,5 +14,6 @@ RUN mkdir /etc/nginx/ssl &&\
     chmod -R 640 /etc/nginx/ssl/
 
 # Copy Nginx configuration files
-WORKDIR /etc/nginx/
-COPY . .
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY errors.conf /etc/nginx/conf.d/errors.conf
+COPY locations.conf /etc/nginx/conf.d/locations.conf
