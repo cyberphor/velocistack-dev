@@ -14,16 +14,16 @@ services:
       - "8001:8001" # gRPC server (handles API request)
       - "8003:8003" # Prometheus monitoring server
       - "443:443"   # web console
-  cyberchef: 
-    profiles: [ "velocistack", "cyberchef" ]
-    build: cyberchef
-    image: cyberchef:dev
-    container_name: cyberchef
-    hostname: cyberchef
-    ports:
-      - "8443:8443"
+  #cyber-chef: 
+  #  profiles: [ "velocistack", "cyber-chef" ]
+  #  build: cyber-chef
+  #  image: cyber-chef:dev
+  #  container_name: cyber-chef
+  #  hostname: cyber-chef
+  #  ports:
+  #    - "8443:8443"
   postgres: # database
-    profiles: [ "velocistack", "intelowl" ]
+    profiles: [ "velocistack", "intelowl", "iris", "postgres" ]
     build: postgres
     image: postgres:dev
     container_name: postgres
@@ -82,7 +82,7 @@ services:
       - logs:/var/log/intel_owl
       - web:/opt/deploy/intel_owl/static
     ports:
-      - "8001:8001"
+      - "8081:8081"
     depends_on:
       - postgres 
       - rabbitmq
@@ -96,7 +96,9 @@ services:
     hostname: iris
     env_file: .env
     ports:
-     - "8002:8002"
+     - "8082:8082"
+    depends_on:
+      - postgres
   nginx: # front-end web server
     profiles: [ "velocistack", "intelowl", "iris" ]
     build: nginx
@@ -108,7 +110,7 @@ services:
       - logs:/var/log/nginx
       - web:/var/www/static
     ports:
-      - "8000:8000"
+      - "8080:8080"
     depends_on:
       - intelowl # upstream server needs to be up first for redirection
       - iris
@@ -126,12 +128,12 @@ services:
     networks: 
       velocistack:
         ipv4_address: ${ES_IP}
-    healthcheck:
-      test: ["CMD-SHELL", "curl ${ES_HOST} --cacert ${ES_PUBLIC_KEY} -u ${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}"]
-      start_period: 10s
-      retries: 3
-      interval: 5s
-      timeout: 3s
+    #healthcheck:
+    #  test: ["CMD-SHELL", "curl ${ES_HOST} --cacert ${ES_PUBLIC_KEY} -u ${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}"]
+    #  start_period: 10s
+    #  retries: 3
+    #  interval: 5s
+    #  timeout: 3s
   kibana:
     profiles: [ "velocistack", "elastic" ]
     build: kibana
@@ -151,16 +153,16 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
-    healthcheck:
-      test: [ "CMD-SHELL", "curl http://${KIBANA_IP}:${KIBANA_PORT} -I -s | grep -q 'HTTP/1.1 302 Found'", ]
-  cadvisor:
-    profiles: [ "velocistack", "prometheus" ] 
-    build: cadvisor
-    image: cadvisor:dev 
-    container_name: cadvisor
-    hostname: cadvisor
-    ports:
-      - "8080:8080"
+    #healthcheck:
+    #  test: [ "CMD-SHELL", "curl http://${KIBANA_IP}:${KIBANA_PORT} -I -s | grep -q 'HTTP/1.1 302 Found'", ]
+  #cadvisor:
+  #  profiles: [ "velocistack", "prometheus" ] 
+  #  build: cadvisor
+  #  image: cadvisor:dev 
+  #  container_name: cadvisor
+  #  hostname: cadvisor
+  #  ports:
+  #    - "8080:8080"
   prometheus:
     profiles: [ "velocistack", "prometheus" ]
     build: prometheus
@@ -170,8 +172,8 @@ services:
     env_file: .env
     ports:
       - "9090:9090"
-    depends_on:
-      - cadvisor
+    #depends_on:
+    #  - cadvisor
   grafana:
     profiles: [ "velocistack", "grafana" ]
     build: grafana

@@ -4,7 +4,7 @@ LABEL maintainer="Wes Lambert, @therealwlambert"
 LABEL contributor="Victor Fernandez III, @cyberphor"
 
 # Copy Celery beat entrypoint
-COPY . . 
+COPY entrypoint.sh /opt/deploy/intel_owl/entrypoint.sh
 
 # Run Celery beat
 CMD [ "/opt/deploy/intel_owl/entrypoint.sh" ]

@@ -113,6 +113,7 @@ flowchart TD
             intel_owl --> celery_beat
             intel_owl --> celery_worker 
         nginx --> iris
+            iris --> postgres
     velociraptor --> prometheus
         prometheus --> cadvisor
     velociraptor --> grafana
