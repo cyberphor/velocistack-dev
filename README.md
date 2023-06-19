@@ -110,8 +110,8 @@ flowchart TD
     velociraptor --> nginx 
         nginx --> intel_owl
             intel_owl --> rabbitmq --> postgres
-            intel_owl --> celery_beat
-            intel_owl --> celery_worker 
+            intel_owl --> celery_beat --> postgres
+            intel_owl --> celery_worker --> postgres
         nginx --> iris
             iris --> postgres
     velociraptor --> prometheus

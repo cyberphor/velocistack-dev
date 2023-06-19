@@ -157,18 +157,18 @@ services:
     env_file: .env
     volumes:
       - certs:/usr/share/elasticsearch/config/certs/
-    # - logs:/var/log/elasticsearch
+      - logs:/usr/share/elasticsearch/logs/
     ports:
       - "9200:9200"
     networks: 
       velocistack:
         ipv4_address: ${ES_IP}
-    #healthcheck:
-    #  test: ["CMD-SHELL", "curl ${ES_HOST} --cacert ${ES_PUBLIC_KEY} -u ${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}"]
-    #  start_period: 10s
-    #  retries: 3
-    #  interval: 5s
-    #  timeout: 3s
+    healthcheck:
+      test: ["CMD-SHELL", "curl ${ES_HOST} --cacert ${ES_PUBLIC_KEY} -u ${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}"]
+      start_period: 10s
+      retries: 3
+      interval: 5s
+      timeout: 3s
   kibana:
     profiles: [ "velocistack", "elastic" ]
     build: kibana
@@ -178,7 +178,7 @@ services:
     env_file: .env
     volumes:
       - certs:/usr/share/kibana/config/certs/
-    # - logs:/var/log/elasticsearch
+      - logs:/usr/share/kibana/logs/
     ports:
       - "${KIBANA_PORT}:${KIBANA_PORT}"
     extra_hosts:
@@ -187,11 +187,10 @@ services:
       velocistack:
         ipv4_address: ${KIBANA_IP}
     depends_on:
-      - elasticsearch
-      # elasticsearch:
-      #   condition: service_healthy
-    #healthcheck:
-    #  test: [ "CMD-SHELL", "curl http://${KIBANA_IP}:${KIBANA_PORT} -I -s | grep -q 'HTTP/1.1 302 Found'", ]
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl http://${KIBANA_IP}:${KIBANA_PORT} -I -s | grep -q 'HTTP/1.1 302 Found'", ]
   #cadvisor:
   #  profiles: [ "velocistack", "prometheus" ] 
   #  build: cadvisor
