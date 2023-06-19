@@ -7,7 +7,7 @@ services:
     hostname: velociraptor
     env_file: .env
     volumes:
-      - velociraptor_data:/opt/velociraptor/:rw
+      - velociraptor_data:/opt/velociraptor/
       - velociraptor_api:/api/
     ports:
       - "8000:8000" # server-to-client communication
@@ -33,6 +33,12 @@ services:
       - postgres:/var/lib/postgresql/data/
     ports:
       - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB_INTELOWL" ]
+      start_period: 10s
+      interval: 10s
+      timeout: 3s
+      retries: 3
   rabbitmq: # message broker between (Nginx > uWSGI > Intel Owl) and Celery
     profiles: [ "velocistack", "intelowl" ]
     build: rabbitmq
@@ -44,7 +50,14 @@ services:
       - "5672:5672"
       - "15672:15672"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics ping -q"]
+      start_period: 10s
+      interval: 10s
+      timeout: 3s
+      retries: 3
   celery-beat: # schedules tasks for Intel Owl; sends results to Postgres
     profiles: [ "velocistack", "intelowl" ]
     build: celery-beat
@@ -53,11 +66,19 @@ services:
     hostname: celery-beat
     env_file: .env
     volumes:
-      - logs:/var/log/intel_owl
+      - logs:/var/log/intel_owl/
       - shared:/opt/deploy/files_required
     depends_on:
-      - postgres
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+  # healthcheck:
+  #   test: ["CMD-SHELL", "ps aux | grep -i '[c]elery"]
+  #   start_period: 10s
+  #   interval: 10s
+  #   timeout: 3s
+  #   retries: 3
   celery-worker: # off-loads tasks for Intel Owl; sends results to Postgres
     profiles: [ "velocistack", "intelowl" ]
     build: celery-worker
@@ -66,11 +87,19 @@ services:
     hostname: celery-worker
     env_file: .env
     volumes:
-      - logs:/var/log/intel_owl
+      - logs:/var/log/intel_owl/
       - shared:/opt/deploy/files_required
     depends_on:
-      - rabbitmq
-      - postgres
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+  # healthcheck:
+  #   test: ["CMD-SHELL", "ps aux | grep -i '[c]elery"]
+  #   start_period: 10s
+  #   interval: 10s
+  #   timeout: 3s
+  #   retries: 3
   intelowl: # Web Server Gateway Interface between Nginx and Intel Owl (a Python/Django-based app)
     profiles: [ "velocistack", "intelowl" ]
     build: intelowl
@@ -79,15 +108,19 @@ services:
     hostname: intelowl
     env_file: .env
     volumes:
-      - logs:/var/log/intel_owl
-      - web:/opt/deploy/intel_owl/static
+      - logs:/var/log/intel_owl/
+      - web:/opt/deploy/intel_owl/static/
     ports:
       - "8081:8081"
     depends_on:
-      - postgres 
-      - rabbitmq
-      - celery-beat
-      - celery-worker
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      celery-beat:
+        condition: service_started
+      celery-worker:
+        condition: service_started
   iris:
     profiles: [ "velocistack", "iris" ]
     build: iris
@@ -98,7 +131,8 @@ services:
     ports:
      - "8082:8082"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
   nginx: # front-end web server
     profiles: [ "velocistack", "intelowl", "iris" ]
     build: nginx
@@ -106,9 +140,9 @@ services:
     container_name: nginx
     hostname: nginx
     volumes:
-      - certs:/etc/nginx/ssl
-      - logs:/var/log/nginx
-      - web:/var/www/static
+      - certs:/etc/nginx/ssl/
+      - logs:/var/log/nginx/
+      - web:/var/www/static/
     ports:
       - "8080:8080"
     depends_on:
@@ -123,6 +157,7 @@ services:
     env_file: .env
     volumes:
       - certs:/usr/share/elasticsearch/config/certs/
+    # - logs:/var/log/elasticsearch
     ports:
       - "9200:9200"
     networks: 
@@ -143,6 +178,7 @@ services:
     env_file: .env
     volumes:
       - certs:/usr/share/kibana/config/certs/
+    # - logs:/var/log/elasticsearch
     ports:
       - "${KIBANA_PORT}:${KIBANA_PORT}"
     extra_hosts:
@@ -151,8 +187,9 @@ services:
       velocistack:
         ipv4_address: ${KIBANA_IP}
     depends_on:
-      elasticsearch:
-        condition: service_healthy
+      - elasticsearch
+      # elasticsearch:
+      #   condition: service_healthy
     #healthcheck:
     #  test: [ "CMD-SHELL", "curl http://${KIBANA_IP}:${KIBANA_PORT} -I -s | grep -q 'HTTP/1.1 302 Found'", ]
   #cadvisor:
@@ -172,8 +209,8 @@ services:
     env_file: .env
     ports:
       - "9090:9090"
-    #depends_on:
-    #  - cadvisor
+    # depends_on:
+    #   - cadvisor
   grafana:
     profiles: [ "velocistack", "grafana" ]
     build: grafana
