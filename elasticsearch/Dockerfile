@@ -4,7 +4,6 @@ LABEL Author="Victor Fernandez III, @cyberphor"
 
 # Copy Elasticsearch configuration files
 USER root
-COPY elasticsearch.yml config/elasticsearch.yml
 COPY instances.yml config/certs/instances.yml
 
 # Generate a CA certificate (needed to sign X.509 certificates)
