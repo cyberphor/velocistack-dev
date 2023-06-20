@@ -1,106 +1,45 @@
-# Velocistack
-![image](https://user-images.githubusercontent.com/16829864/191647658-5379ea3d-476d-4959-87ee-e8ad0107115e.png)
+## Velocistack
+### Requirements
+* Operating System: Ubuntu 20.04 or Windows 11
+* Container Software: Docker and Docker Compose
 
-## Introduction
-### What is Velocistack?
-Velocistack is a free and open solution for streamlined host-based forensics and investigation.
-
-- Collect forensic artifacts
-- Post-process collections
-- Visualize collections or hunt results
-- Create cases for investigation
-- Enrich results with additional context
-
-### Why was Velocistack created?
-To allow individuals to quickly spin up a local, integrated environment for analysis and investigation of forensic artifacts collected by Velociraptor, using popular free and open tools.
-
-### Who should use Velocistack?
-- Analysts
-- Incident Responders
-- Students
-- Anyone!
-
-## Screenshots
-### Landing Page
-![image](https://user-images.githubusercontent.com/16829864/190757428-51012a52-13d5-429e-837f-3215a64598a8.png)
-
-### CyberChef
-![image](https://user-images.githubusercontent.com/16829864/191644980-52b65fa7-6940-40fa-8d3d-966602aa66f1.png)
-
-![image](https://user-images.githubusercontent.com/16829864/191645908-ed16ee29-1604-4cb9-9eba-72d1fd544fbd.png)
-
-### Grafana
-![image](https://user-images.githubusercontent.com/16829864/191645061-e0bd7597-5d2a-4bb5-b26c-6ec3bd5c41e1.png)
-
-### IntelOwl
-![image](https://user-images.githubusercontent.com/16829864/191645176-08ddbe91-b82e-439b-80a4-babc132cc588.png)
-
-### IRIS
-![image](https://user-images.githubusercontent.com/16829864/191645234-762f709d-1a6e-4c77-967f-175d71cef830.png)
-
-### Kibana
-![image](https://user-images.githubusercontent.com/16829864/191645828-0a29ae0b-209b-48fc-a949-75e108c50b5c.png)
-
-
-## Getting started
-### Pre-reqs
-- Tested on Ubuntu 20.04, although 18.04 should work as well (or other distros)
-- Docker should be installed.
-- The Docker Compose plugin should be installed: https://docs.docker.com/compose/install/
-
-### Clone
+### Installation
+**Step 1.** Download Velocistack.
 ```
-git clone https://github.com/weslambert/velocistack && cd velocistack
+git clone https://github.com/weslambert/velocistack &&\
+cd velocistack
 ```
 
-### Run the installer script
+**Step 2.** Run the installer script.
+```
 `sudo ./install_velocistack`
+```
 
-### Authentication
-Currently, authentication occurs primarily through Velociraptor. It proxies all services, except for IRIS and IntelOwl
-
-#### Velociraptor credentials:
-`User: admin`
-
-`Password: admin`
-
-#### IRIS credentials:
-`User: administrator`
-
-`Password: admin`
-
-#### IntelOwl credentials:
-Create superuser credentials for IntelOwl by running the following command from the CLI:
-
-`sudo docker exec -ti uwsgi python3 manage.py createsuperuser`
-
-
-### Web Access
-#### Velociraptor
-`https://$YOURIP/velocistack`
-
-#### Cyberchef
-`https://$YOURIP/velocistack/cyberchef`
-
-#### Grafana
-`https://$YOURIP/velocistack/grafana`
-
-#### IntelOwl
-`https://$YOURIP:8443`
-
-#### IRIS
-`https://$YOURIP/`
-
-#### Prometheus
-`https://$YOURIP/velocistack/prometheus`
-
-#### Kibana
-`https://$YOURIP/velocistack/kibana`
-
-### Troubleshooting
+**Troubleshooting**  
 If you experience an error with `cadvisor` and `/var/lib/docker`, try replacing the volume with `/var/snap/docker/common/var-lib-docker/` (for Docker installs that have occurred via `snap`).
 
-### Network Diagram
+### Getting Started
+Login to Velociraptor and/or other included apps using the information below.
+| Working  | App          | Port | URL                                      |
+| -------- | ------------ | ---- | ---------------------------------------- |
+| &check;  | Velociraptor | 8443 | https://localhost:8443/                  |
+|          | Cyberchef    | ---- | https://localhost/cyberchef              |
+| &check;  | Nginx        | 8080 |                                          |
+| &check;  | Intel Owl    | 8081 | https://localhost:8080/intelowl          |
+|          | IRIS         | 8082 | https://localhost:8080/iris              |
+| &check;  | Kibana       | 5601 | https://localhost:5601/                  |
+|          | Prometheus   | 9090 | https://localhost/velocistack/prometheus |
+|          | Grafana      | 3000 | https://localhost:3000/                  |
+
+### Authentication
+Velocistack proxies authentication for all services except for Intel Owl and IRIS. 
+| App          | Username      | Password   |
+| ------------ | ------------- | ---------- |
+| Velociraptor | admin         | admin      |
+| IRIS         | administrator | admin      |
+| Intel Owl    | See below.    | See below. |
+
+### Container Relationships
 ```mermaid
 flowchart TD
     velociraptor --> cyber_chef
@@ -110,11 +49,49 @@ flowchart TD
     velociraptor --> nginx 
         nginx --> intel_owl
             intel_owl --> rabbitmq --> postgres
-            intel_owl --> celery_beat --> postgres
-            intel_owl --> celery_worker --> postgres
         nginx --> iris
             iris --> postgres
     velociraptor --> prometheus
         prometheus --> cadvisor
     velociraptor --> grafana
 ```
+
+### FAQs
+**What is Velocistack?** 
+Velocistack is a free and open solution for streamlined host-based forensics and investigation.
+- Collect forensic artifacts
+- Post-process collections
+- Visualize collections or hunt results
+- Create cases for investigation
+- Enrich results with additional context
+
+**Why was Velocistack created?**  
+To allow individuals to quickly spin up a local, integrated environment for analysis and investigation of forensic artifacts collected by Velociraptor, using popular free and open tools.
+
+**Who should use Velocistack?**
+- Analysts
+- Incident Responders
+- Students
+- Anyone!
+
+### Screenshots
+**Landing Page**  
+![image](https://user-images.githubusercontent.com/16829864/190757428-51012a52-13d5-429e-837f-3215a64598a8.png)
+
+**Cyber Chef**  
+![image](https://user-images.githubusercontent.com/16829864/191644980-52b65fa7-6940-40fa-8d3d-966602aa66f1.png)
+
+**Cyber Chef Support in Velociraptor**
+![image](https://user-images.githubusercontent.com/16829864/191645908-ed16ee29-1604-4cb9-9eba-72d1fd544fbd.png)
+
+**IntelOwl**  
+![image](https://user-images.githubusercontent.com/16829864/191645176-08ddbe91-b82e-439b-80a4-babc132cc588.png)
+
+**IRIS**  
+![image](https://user-images.githubusercontent.com/16829864/191645234-762f709d-1a6e-4c77-967f-175d71cef830.png)
+
+**Kibana**
+![image](https://user-images.githubusercontent.com/16829864/191645828-0a29ae0b-209b-48fc-a949-75e108c50b5c.png)
+
+**Grafana**  
+![image](https://user-images.githubusercontent.com/16829864/191645061-e0bd7597-5d2a-4bb5-b26c-6ec3bd5c41e1.png)

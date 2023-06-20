@@ -13,15 +13,17 @@ services:
       - "8000:8000" # server-to-client communication
       - "8001:8001" # gRPC server (handles API request)
       - "8003:8003" # Prometheus monitoring server
-      - "443:443"   # web console
-  #cyber-chef: 
-  #  profiles: [ "velocistack", "cyber-chef" ]
-  #  build: cyber-chef
-  #  image: cyber-chef:dev
-  #  container_name: cyber-chef
-  #  hostname: cyber-chef
-  #  ports:
-  #    - "8443:8443"
+      - "8443:8443" # web console
+    networks: 
+      velocistack:
+  # cyber-chef: 
+  #   profiles: [ "velocistack", "cyber-chef" ]
+  #   build: cyber-chef
+  #   image: cyber-chef:dev
+  #   container_name: cyber-chef
+  #   hostname: cyber-chef
+  #   ports:
+  #     - "8443:8443"
   postgres: # database
     profiles: [ "velocistack", "intelowl", "iris", "postgres" ]
     build: postgres
@@ -33,6 +35,8 @@ services:
       - postgres:/var/lib/postgresql/data/
     ports:
       - "5432:5432"
+    networks: 
+      velocistack:
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB_INTELOWL" ]
       start_period: 10s
@@ -49,6 +53,8 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    networks: 
+      velocistack:
     depends_on:
       postgres:
         condition: service_healthy
@@ -58,42 +64,46 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
-  celery-beat: # schedules tasks for Intel Owl; sends results to Postgres
-    profiles: [ "velocistack", "intelowl" ]
-    build: celery-beat
-    image: celery-beat:dev
-    container_name: celery-beat
-    hostname: celery-beat
-    env_file: .env
-    volumes:
-      - logs:/var/log/intel_owl/
-      - shared:/opt/deploy/files_required
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+  # celery-beat: # schedules tasks for Intel Owl; sends results to Postgres
+  #   profiles: [ "velocistack", "intelowl" ]
+  #   build: celery-beat
+  #   image: celery-beat:dev
+  #   container_name: celery-beat
+  #   hostname: celery-beat
+  #   env_file: .env
+  #   volumes:
+  #     - logs:/var/log/intel_owl/
+  #     - shared:/opt/deploy/files_required
+  #   networks: 
+  #     velocistack:
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
   # healthcheck:
   #   test: ["CMD-SHELL", "ps aux | grep -i '[c]elery"]
   #   start_period: 10s
   #   interval: 10s
   #   timeout: 3s
   #   retries: 3
-  celery-worker: # off-loads tasks for Intel Owl; sends results to Postgres
-    profiles: [ "velocistack", "intelowl" ]
-    build: celery-worker
-    image: celery-worker:dev
-    container_name: celery-worker
-    hostname: celery-worker
-    env_file: .env
-    volumes:
-      - logs:/var/log/intel_owl/
-      - shared:/opt/deploy/files_required
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+  # celery-worker: # off-loads tasks for Intel Owl; sends results to Postgres
+  #   profiles: [ "velocistack", "intelowl" ]
+  #   build: celery-worker
+  #   image: celery-worker:dev
+  #   container_name: celery-worker
+  #   hostname: celery-worker
+  #   env_file: .env
+  #   volumes:
+  #     - logs:/var/log/intel_owl/
+  #     - shared:/opt/deploy/files_required
+  #   networks: 
+  #     velocistack:
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
   # healthcheck:
   #   test: ["CMD-SHELL", "ps aux | grep -i '[c]elery"]
   #   start_period: 10s
@@ -112,15 +122,17 @@ services:
       - web:/opt/deploy/intel_owl/static/
     ports:
       - "8081:8081"
+    networks: 
+      velocistack:
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      celery-beat:
-        condition: service_started
-      celery-worker:
-        condition: service_started
+      # celery-beat:
+      #   condition: service_started
+      # celery-worker:
+      #   condition: service_started
   iris:
     profiles: [ "velocistack", "iris" ]
     build: iris
@@ -130,6 +142,8 @@ services:
     env_file: .env
     ports:
      - "8082:8082"
+    networks: 
+      velocistack:
     depends_on:
       postgres:
         condition: service_healthy
@@ -145,9 +159,11 @@ services:
       - web:/var/www/static/
     ports:
       - "8080:8080"
+    networks: 
+      velocistack:
     depends_on:
       - intelowl # upstream server needs to be up first for redirection
-      - iris
+    # - iris
   elasticsearch:
     profiles: [ "velocistack", "elastic" ]
     build: elasticsearch
@@ -157,7 +173,7 @@ services:
     env_file: .env
     volumes:
       - certs:/usr/share/elasticsearch/config/certs/
-      - logs:/usr/share/elasticsearch/logs/
+    # - logs:/usr/share/elasticsearch/logs/
     ports:
       - "9200:9200"
     networks: 
@@ -165,10 +181,9 @@ services:
         ipv4_address: ${ES_IP}
     healthcheck:
       test: ["CMD-SHELL", "curl ${ES_HOST} --cacert ${ES_PUBLIC_KEY} -u ${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}"]
-      start_period: 10s
-      retries: 3
+      start_period: 30s
       interval: 5s
-      timeout: 3s
+      retries: 3
   kibana:
     profiles: [ "velocistack", "elastic" ]
     build: kibana
@@ -178,7 +193,7 @@ services:
     env_file: .env
     volumes:
       - certs:/usr/share/kibana/config/certs/
-      - logs:/usr/share/kibana/logs/
+    # - logs:/usr/share/kibana/logs/
     ports:
       - "${KIBANA_PORT}:${KIBANA_PORT}"
     extra_hosts:
@@ -191,14 +206,16 @@ services:
         condition: service_healthy
     healthcheck:
       test: [ "CMD-SHELL", "curl http://${KIBANA_IP}:${KIBANA_PORT} -I -s | grep -q 'HTTP/1.1 302 Found'", ]
-  #cadvisor:
-  #  profiles: [ "velocistack", "prometheus" ] 
-  #  build: cadvisor
-  #  image: cadvisor:dev 
-  #  container_name: cadvisor
-  #  hostname: cadvisor
-  #  ports:
-  #    - "8080:8080"
+  # cadvisor:
+  #   profiles: [ "velocistack", "prometheus" ] 
+  #   build: cadvisor
+  #   image: cadvisor:dev 
+  #   container_name: cadvisor
+  #   hostname: cadvisor
+  #   ports:
+  #     - "8080:8080"
+  #   networks: 
+  #     velocistack:
   prometheus:
     profiles: [ "velocistack", "prometheus" ]
     build: prometheus
@@ -208,6 +225,8 @@ services:
     env_file: .env
     ports:
       - "9090:9090"
+    networks: 
+      velocistack:
     # depends_on:
     #   - cadvisor
   grafana:
@@ -219,6 +238,17 @@ services:
     env_file: .env
     ports:
       - "3000:3000"
+    networks: 
+      velocistack:
+  # zinc:
+  #   profiles: [ "velocistack", "zinc" ]
+  #   build: zinc
+  #   image: zinc:dev
+  #   container_name: zinc
+  #   hostname: zinc
+  #   env_file: .env
+  #   networks: 
+  #     velocistack:
 
 volumes:
   certs:

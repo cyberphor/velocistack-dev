@@ -22,7 +22,7 @@ RUN elasticsearch-certutil cert --silent --pem \
 
 # Reorganize and restrict Elasticsearch files
 RUN mv config/certs/*/* config/certs/ &&\
-    rm -r config/certs/instances.yml config/certs/*/ config/certs/*.zip 
+    rm -r config/certs/instances.yml config/certs/*/ config/certs/*.zip
 
 # Switch user accounts back to Elasticsearch
 USER elasticsearch

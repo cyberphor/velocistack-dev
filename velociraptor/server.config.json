@@ -1,7 +1,7 @@
 {
   "GUI": {
     "bind_address": "0.0.0.0",
-    "bind_port": 443,
+    "bind_port": 8443,
     "links": [
       {
         "text": "CyberChef",
@@ -129,6 +129,6 @@
     "server_urls": [
       "https://velociraptor:8000/"
     ],
-    "use_self_signed_ssl": false
+    "use_self_signed_ssl": true
   }
 }
