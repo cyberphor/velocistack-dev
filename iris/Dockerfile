@@ -2,6 +2,7 @@
 FROM python:3.9
 LABEL maintainer="Wes Lambert, @therealwlambert"
 LABEL contributor="Victor Fernandez III, @cyberphor"
+LABEL reference="https://docs.dfir-iris.org/_static/iris_structure.png"
 
 # Install tools needed to download IRIS
 RUN apt-get update &&\

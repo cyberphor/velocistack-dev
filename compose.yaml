@@ -13,7 +13,7 @@ services:
       - "8000:8000" # server-to-client communication
       - "8001:8001" # gRPC server (handles API request)
       - "8003:8003" # Prometheus monitoring server
-      - "8443:8443" # web console
+      - "8889:8889" # Velociraptor web console
     networks: 
       velocistack:
   # cyber-chef: 
@@ -121,7 +121,7 @@ services:
       - logs:/var/log/intel_owl/
       - web:/opt/deploy/intel_owl/static/
     ports:
-      - "80"
+      - "9001:9001" # Intel Owl web console
     networks: 
       velocistack:
     depends_on:
@@ -141,7 +141,7 @@ services:
     hostname: iris
     env_file: .env
     ports:
-     - "80"
+     - "9000:9000" # IRIS web console
     networks: 
       velocistack:
     depends_on:
@@ -161,11 +161,12 @@ services:
       - logs:/var/log/nginx/
     ports:
       - "80:80"
+      - "443:443"
     networks: 
       velocistack:
     depends_on:
       - intelowl # upstream server needs to be up first for redirection
-    # - iris
+      - iris     # upstream server needs to be up first for redirection
   elasticsearch:
     profiles: [ "velocistack", "elastic" ]
     build: elasticsearch
@@ -198,7 +199,7 @@ services:
       - certs:/usr/share/kibana/config/certs/
     # - logs:/usr/share/kibana/logs/
     ports:
-      - "${KIBANA_PORT}:${KIBANA_PORT}"
+      - "${KIBANA_PORT}:${KIBANA_PORT}" # Kibana web console
     extra_hosts:
       - "elasticsearch:${ES_IP}"
     networks: 
@@ -227,7 +228,7 @@ services:
     hostname: prometheus
     env_file: .env
     ports:
-      - "9090:9090"
+      - "9090:9090" # Prometheus web console
     networks: 
       velocistack:
     # depends_on:
@@ -240,7 +241,7 @@ services:
     hostname: grafana
     env_file: .env
     ports:
-      - "3000:3000"
+      - "3000:3000" # Grafana web console
     networks: 
       velocistack:
   # zinc:

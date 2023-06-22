@@ -20,16 +20,16 @@ If you experience an error with `cadvisor` and `/var/lib/docker`, try replacing 
 
 ### Getting Started
 Login to Velociraptor and/or other included apps using the information below.
-| Working  | App          | Port | URL                                      |
-| -------- | ------------ | ---- | ---------------------------------------- |
-| &check;  | Velociraptor | 8443 | https://localhost:8443/                  |
-|          | Cyberchef    | ---- | https://localhost/cyberchef              |
-| &check;  | Nginx        | 8080 |                                          |
-| &check;  | Intel Owl    | 8081 | https://localhost:8080/intelowl          |
-|          | IRIS         | 8082 | https://localhost:8080/iris              |
-| &check;  | Kibana       | 5601 | https://localhost:5601/                  |
-|          | Prometheus   | 9090 | https://localhost/velocistack/prometheus |
-|          | Grafana      | 3000 | https://localhost:3000/                  |
+| Working  | App          | Port | URL                                       |
+| -------- | ------------ | ---- | ----------------------------------------- |
+| &check;  | Velociraptor | 8889 | https://localhost:8889/                   |
+|          | Cyberchef    | ---- | https://localhost/cyberchef               |
+| &check;  | Nginx        | 443  |                                           |
+| &check;  | Intel Owl    | 9001 | https://localhost/intelowl/               |
+| &check;  | IRIS         | 9000 | https://localhost/iris/                   |
+| &check;  | Kibana       | 5601 | https://localhost:5601/                   |
+|          | Prometheus   | 9090 | https://localhost/velocistack/prometheus/ |
+|          | Grafana      | 3000 | https://localhost:3000/                   |
 
 ### Authentication
 Velocistack proxies authentication for all services except for Intel Owl and IRIS. 
