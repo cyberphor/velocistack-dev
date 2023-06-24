@@ -11,7 +11,7 @@ services:
       - velociraptor_api:/api/
     ports:
       - "8000:8000" # server-to-client communication
-      - "8001:8001" # gRPC server (handles API request)
+    # - "8001:8001" # gRPC server (handles API request)
       - "8003:8003" # Prometheus monitoring server
       - "8889:8889" # Velociraptor web console
     networks: 
@@ -121,9 +121,10 @@ services:
       - logs:/var/log/intel_owl/
       - web:/opt/deploy/intel_owl/static/
     ports:
-      - "9001:9001" # Intel Owl web console
+      - "8001:8001" # Intel Owl web console
     networks: 
       velocistack:
+    # TODO: add healthcheck
     depends_on:
       postgres:
         condition: service_healthy
