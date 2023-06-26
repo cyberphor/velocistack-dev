@@ -39,10 +39,9 @@ services:
       velocistack:
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB_INTELOWL" ]
-      start_period: 10s
-      interval: 10s
-      timeout: 3s
-      retries: 3
+      start_period: 5s
+      interval: 3s
+      retries: 2
   rabbitmq: # message broker between (Nginx > uWSGI > Intel Owl) and Celery
     profiles: [ "velocistack", "intelowl" ]
     build: rabbitmq
