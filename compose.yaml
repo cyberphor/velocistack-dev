@@ -109,7 +109,7 @@ services:
   #   interval: 10s
   #   timeout: 3s
   #   retries: 3
-  intelowl: # Web Server Gateway Interface between Nginx and Intel Owl (a Python/Django-based app)
+  intelowl: # Web Server Gateway Interface between Nginx and Intel Owl (a React + Django app)
     profiles: [ "velocistack", "intelowl" ]
     build: intelowl
     image: intelowl:dev
