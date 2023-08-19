@@ -10,9 +10,9 @@ git clone https://github.com/weslambert/velocistack &&\
 cd velocistack
 ```
 
-**Step 2.** Run the installer script.
+**Step 2.** Run Docker Compose.
 ```
-`sudo ./install_velocistack`
+docker compose --profile velociraptor up
 ```
 
 **Troubleshooting**  
@@ -38,23 +38,6 @@ Velocistack proxies authentication for all services except for Intel Owl and IRI
 | Velociraptor | admin         | admin      |
 | IRIS         | administrator | admin      |
 | Intel Owl    | See below.    | See below. |
-
-### Container Relationships
-```mermaid
-flowchart TD
-    velociraptor --> cyber_chef
-    velociraptor --> kibana 
-        kibana --> elasticsearch
-    velociraptor --> zinc
-    velociraptor --> nginx 
-        nginx --> intel_owl
-            intel_owl --> rabbitmq --> postgres
-        nginx --> iris
-            iris --> postgres
-    velociraptor --> prometheus
-        prometheus --> cadvisor
-    velociraptor --> grafana
-```
 
 ### FAQs
 **What is Velocistack?** 

@@ -5,7 +5,7 @@ LABEL description="Velociraptor server in a Docker container"
 LABEL maintainer="Wes Lambert, @therealwlambert"
 LABEL contributor="Victor Fernandez III, @cyberphor"
 
-# Install tools needed to download Veloc iraptor and Cyber Chef
+# Install tools needed to download Velociraptor and Cyber Chef
 RUN apt-get update &&\
     apt-get install -y wget jq unzip
 

@@ -13,17 +13,17 @@ services:
       - "8000:8000" # server-to-client communication
     # - "8001:8001" # gRPC server (handles API request)
       - "8003:8003" # Prometheus monitoring server
-      - "8889:8889" # Velociraptor web console
+      - "8889:8889" # Velociraptor GUI
     networks: 
       velocistack:
-  # cyber-chef: 
-  #   profiles: [ "velocistack", "cyber-chef" ]
-  #   build: cyber-chef
-  #   image: cyber-chef:dev
-  #   container_name: cyber-chef
-  #   hostname: cyber-chef
-  #   ports:
-  #     - "8443:8443"
+  #cyber-chef: 
+  #  profiles: [ "velocistack", "cyber-chef" ]
+  #  build: cyber-chef
+  #  image: cyber-chef:dev
+  #  container_name: cyber-chef
+  #  hostname: cyber-chef
+  #  ports:
+  #    - "8443:8443"
   postgres: # database
     profiles: [ "velocistack", "intelowl", "iris", "postgres" ]
     build: postgres
@@ -42,7 +42,7 @@ services:
       start_period: 5s
       interval: 3s
       retries: 2
-  rabbitmq: # message broker between (Nginx > uWSGI > Intel Owl) and Celery
+  rabbitmq: # message broker between Intel Owl and Celery
     profiles: [ "velocistack", "intelowl" ]
     build: rabbitmq
     image: rabbitmq:dev
@@ -63,53 +63,53 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
-  # celery-beat: # schedules tasks for Intel Owl; sends results to Postgres
-  #   profiles: [ "velocistack", "intelowl" ]
-  #   build: celery-beat
-  #   image: celery-beat:dev
-  #   container_name: celery-beat
-  #   hostname: celery-beat
-  #   env_file: .env
-  #   volumes:
-  #     - logs:/var/log/intel_owl/
-  #     - shared:/opt/deploy/files_required
-  #   networks: 
-  #     velocistack:
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     rabbitmq:
-  #       condition: service_healthy
-  # healthcheck:
-  #   test: ["CMD-SHELL", "ps aux | grep -i '[c]elery"]
-  #   start_period: 10s
-  #   interval: 10s
-  #   timeout: 3s
-  #   retries: 3
-  # celery-worker: # off-loads tasks for Intel Owl; sends results to Postgres
-  #   profiles: [ "velocistack", "intelowl" ]
-  #   build: celery-worker
-  #   image: celery-worker:dev
-  #   container_name: celery-worker
-  #   hostname: celery-worker
-  #   env_file: .env
-  #   volumes:
-  #     - logs:/var/log/intel_owl/
-  #     - shared:/opt/deploy/files_required
-  #   networks: 
-  #     velocistack:
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     rabbitmq:
-  #       condition: service_healthy
-  # healthcheck:
-  #   test: ["CMD-SHELL", "ps aux | grep -i '[c]elery"]
-  #   start_period: 10s
-  #   interval: 10s
-  #   timeout: 3s
-  #   retries: 3
-  intelowl: # Web Server Gateway Interface between Nginx and Intel Owl (a React + Django app)
+  #celery-beat: # schedules tasks for Intel Owl; sends results to Postgres
+  #  profiles: [ "velocistack", "intelowl" ]
+  #  build: celery-beat
+  #  image: celery-beat:dev
+  #  container_name: celery-beat
+  #  hostname: celery-beat
+  #  env_file: .env
+  #  volumes:
+  #    - logs:/var/log/intel_owl/
+  #    - shared:/opt/deploy/files_required
+  #  networks: 
+  #    velocistack:
+  #  depends_on:
+  #    postgres:
+  #      condition: service_healthy
+  #    rabbitmq:
+  #      condition: service_healthy
+  #  healthcheck:
+  #    test: ["CMD-SHELL", "ps aux | grep -i '[c]elery"]
+  #    start_period: 10s
+  #    interval: 10s
+  #    timeout: 3s
+  #    retries: 3
+  #celery-worker: # off-loads tasks for Intel Owl; sends results to Postgres
+  #  profiles: [ "velocistack", "intelowl" ]
+  #  build: celery-worker
+  #  image: celery-worker:dev
+  #  container_name: celery-worker
+  #  hostname: celery-worker
+  #  env_file: .env
+  #  volumes:
+  #    - logs:/var/log/intel_owl/
+  #    - shared:/opt/deploy/files_required
+  #  networks: 
+  #    velocistack:
+  #  depends_on:
+  #    postgres:
+  #      condition: service_healthy
+  #    rabbitmq:
+  #      condition: service_healthy
+  #  healthcheck:
+  #    test: ["CMD-SHELL", "ps aux | grep -i '[c]elery"]
+  #    start_period: 10s
+  #    interval: 10s
+  #    timeout: 3s
+  #    retries: 3
+  intelowl: # uWSGI + Django + React
     profiles: [ "velocistack", "intelowl" ]
     build: intelowl
     image: intelowl:dev
@@ -120,7 +120,7 @@ services:
       - logs:/var/log/intel_owl/
       - web:/opt/deploy/intel_owl/static/
     ports:
-      - "8001:8001" # Intel Owl web console
+      - "8001:8001" # Intel Owl GUI
     networks: 
       velocistack:
     # TODO: add healthcheck
@@ -141,7 +141,7 @@ services:
     hostname: iris
     env_file: .env
     ports:
-     - "9000:9000" # IRIS web console
+     - "9000:9000" # IRIS GUI
     networks: 
       velocistack:
     depends_on:
@@ -167,92 +167,92 @@ services:
     depends_on:
       - intelowl # upstream server needs to be up first for redirection
       - iris     # upstream server needs to be up first for redirection
-  elasticsearch:
-    profiles: [ "velocistack", "elastic" ]
-    build: elasticsearch
-    image: elasticsearch:dev
-    container_name: elasticsearch
-    hostname: elasticsearch
-    env_file: .env
-    volumes:
-      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-      - certs:/usr/share/elasticsearch/config/certs/
-    # - logs:/usr/share/elasticsearch/logs/
-    ports:
-      - "9200:9200"
-    networks: 
-      velocistack:
-        ipv4_address: ${ES_IP}
-    healthcheck:
-      test: ["CMD-SHELL", "curl ${ES_HOST} --cacert ${ES_PUBLIC_KEY} -u ${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}"]
-      start_period: 30s
-      interval: 5s
-      retries: 3
-  kibana:
-    profiles: [ "velocistack", "elastic" ]
-    build: kibana
-    image: kibana:dev
-    container_name: kibana
-    hostname: kibana
-    env_file: .env
-    volumes:
-      - certs:/usr/share/kibana/config/certs/
-    # - logs:/usr/share/kibana/logs/
-    ports:
-      - "${KIBANA_PORT}:${KIBANA_PORT}" # Kibana web console
-    extra_hosts:
-      - "elasticsearch:${ES_IP}"
-    networks: 
-      velocistack:
-        ipv4_address: ${KIBANA_IP}
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    healthcheck:
-      test: [ "CMD-SHELL", "curl http://${KIBANA_IP}:${KIBANA_PORT} -I -s | grep -q 'HTTP/1.1 302 Found'", ]
-  # cadvisor:
-  #   profiles: [ "velocistack", "prometheus" ] 
-  #   build: cadvisor
-  #   image: cadvisor:dev 
-  #   container_name: cadvisor
-  #   hostname: cadvisor
-  #   ports:
-  #     - "8080:8080"
-  #   networks: 
-  #     velocistack:
-  prometheus:
-    profiles: [ "velocistack", "prometheus" ]
-    build: prometheus
-    image: prometheus:dev
-    container_name: prometheus
-    hostname: prometheus
-    env_file: .env
-    ports:
-      - "9090:9090" # Prometheus web console
-    networks: 
-      velocistack:
-    # depends_on:
-    #   - cadvisor
-  grafana:
-    profiles: [ "velocistack", "grafana" ]
-    build: grafana
-    image: grafana:dev
-    container_name: grafana
-    hostname: grafana
-    env_file: .env
-    ports:
-      - "3000:3000" # Grafana web console
-    networks: 
-      velocistack:
-  # zinc:
-  #   profiles: [ "velocistack", "zinc" ]
-  #   build: zinc
-  #   image: zinc:dev
-  #   container_name: zinc
-  #   hostname: zinc
-  #   env_file: .env
-  #   networks: 
-  #     velocistack:
+  #elasticsearch:
+  #  profiles: [ "velocistack", "elastic" ]
+  #  build: elasticsearch
+  #  image: elasticsearch:dev
+  #  container_name: elasticsearch
+  #  hostname: elasticsearch
+  #  env_file: .env
+  #  volumes:
+  #    - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+  #    - certs:/usr/share/elasticsearch/config/certs/
+  #    - logs:/usr/share/elasticsearch/logs/
+  #  ports:
+  #    - "9200:9200"
+  #  networks: 
+  #    velocistack:
+  #      ipv4_address: ${ES_IP}
+  #  healthcheck:
+  #    test: ["CMD-SHELL", "curl ${ES_HOST} --cacert ${ES_PUBLIC_KEY} -u ${ELASTIC_USERNAME}:${ELASTIC_PASSWORD}"]
+  #    start_period: 30s
+  #    interval: 5s
+  #    retries: 3
+  #kibana:
+  #  profiles: [ "velocistack", "elastic" ]
+  #  build: kibana
+  #  image: kibana:dev
+  #  container_name: kibana
+  #  hostname: kibana
+  #  env_file: .env
+  #  volumes:
+  #    - certs:/usr/share/kibana/config/certs/
+  #    - logs:/usr/share/kibana/logs/
+  #  ports:
+  #    - "${KIBANA_PORT}:${KIBANA_PORT}" # Kibana GUI
+  #  extra_hosts:
+  #    - "elasticsearch:${ES_IP}"
+  #  networks: 
+  #    velocistack:
+  #      ipv4_address: ${KIBANA_IP}
+  #  depends_on:
+  #    elasticsearch:
+  #      condition: service_healthy
+  #  healthcheck:
+  #    test: [ "CMD-SHELL", "curl http://${KIBANA_IP}:${KIBANA_PORT} -I -s | grep -q 'HTTP/1.1 302 Found'", ]
+  #cadvisor:
+  #  profiles: [ "velocistack", "prometheus" ] 
+  #  build: cadvisor
+  #  image: cadvisor:dev 
+  #  container_name: cadvisor
+  #  hostname: cadvisor
+  #  ports:
+  #    - "8080:8080"
+  #  networks: 
+  #    velocistack:
+  #prometheus:
+  #  profiles: [ "velocistack", "prometheus" ]
+  #  build: prometheus
+  #  image: prometheus:dev
+  #  container_name: prometheus
+  #  hostname: prometheus
+  #  env_file: .env
+  #  ports:
+  #    - "9090:9090" # Prometheus GUI
+  #  networks: 
+  #    velocistack:
+  #  depends_on:
+  #    - cadvisor
+  #grafana:
+  #  profiles: [ "velocistack", "grafana" ]
+  #  build: grafana
+  #  image: grafana:dev
+  #  container_name: grafana
+  #  hostname: grafana
+  #  env_file: .env
+  #  ports:
+  #    - "3000:3000" # Grafana GUI
+  #  networks: 
+  #    velocistack:
+  #zinc:
+  #  profiles: [ "velocistack", "zinc" ]
+  #  build: zinc
+  #  image: zinc:dev
+  #  container_name: zinc
+  #  hostname: zinc
+  #  env_file: .env
+  #  networks: 
+  #    velocistack:
 
 volumes:
   certs:
