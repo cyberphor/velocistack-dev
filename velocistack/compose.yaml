@@ -147,7 +147,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-  nginx: # front-end web server
+  nginx: # web server
     profiles: [ "velocistack", "intelowl", "iris" ]
     build: nginx
     image: nginx:dev
